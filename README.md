@@ -56,7 +56,7 @@ a=ad.Multiply([ad.Constant(2.),ad.Cos(ad.Power(x,2.))])
 
 b=ad.Differentiate(ad.Sin(ad.Ln(x)),1)
 
-fx=ad.Addition(a,ad.Multiply([ad.Consatnt(-1),b]))
+fx=ad.Addition([a,ad.Multiply([ad.Constant(-1),b])])
 
 print(fx.cal(0.2,1))
 
