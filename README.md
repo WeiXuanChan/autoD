@@ -1,5 +1,5 @@
 # autoD
-autoD is a lightweight, flexible automatic differentiation for python3 based on numpy. 
+autoD is a lightweight, flexible automatic differentiation for python3 based on numpy. It enable user to convert your user-defined functions into differentiatable object. Thus, it will be able to do integration and matrix filling for you (see examples).
 
 ###autoD_v1:
 Use this version if you just need to differentiate one variable.
