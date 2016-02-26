@@ -44,8 +44,7 @@ dOrder is the order of differentiation.
 You can change your args even after definine by calling fx.changeArgs(*new_args).
 
 ###Usage:
-#####Simple Example
-calculate d/dx[ 2cos(x^2)-d/dx[sin(ln(x))] ] at x=0.2
+######Simple Example: calculate d/dx[ 2cos(x^2)-d/dx[sin(ln(x))] ] at x=0.2
 
 import numpy as np
 
@@ -61,7 +60,42 @@ fx=ad.Addition(a,ad.Multiply([ad.Consatnt(-1),b]))
 
 print(fx.cal(0.2,1))
 
+######self-defined function Example: calculate d/dx[ln(integral of x)] and  d/dx[ln(integral of x^2)] at x=0.2, starting integration at x=0.
+import numpy as np
 
+import autoD as ad
+
+def func(x,dOrder,fx,startIntegration):
+
+&nbsp;&nbsp;&nbsp;&nbsp;if dOrder>0:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return fx.cal(x,dOrder-1)
+
+&nbsp;&nbsp;&nbsp;&nbsp;else:
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xsteps=np.array(range(101))/100*(x-startIntegration)+startIntegration
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tosum=np.zeros(101)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for n in range(101):
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tosum[n]=fx.cal(xsteps[n],0)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return np.sum(tosum)
+
+x=ad.Scalar()
+
+a=ad.Power(x,2.)
+
+integral=ad.Function(func,x,0.)
+
+b=ad.Ln(integral)
+
+print(a(0.2,1))
+
+integral.changeArgs(a,0.)
+
+print(a(0.2,1))
 
 ###autoD_v2:
 This version is in beta. It accepts multivariable by giving input with numpy.1darray for both 'x' and 'dOrder'. Both 'x' and 'dOrder' must have the same length. When using scalar, you have to input the index of the array this scalar corresponds to.
