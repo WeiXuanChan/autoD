@@ -81,7 +81,7 @@ def func(x,dOrder,fx,startIntegration):
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tosum[n]=fx.cal(xsteps[n],0)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return np.sum(tosum)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return np.trapz(tosum,x=xsteps)
 
 x=ad.Scalar()
 
@@ -91,11 +91,11 @@ integral=ad.Function(func,x,0.)
 
 b=ad.Ln(integral)
 
-print(a(0.2,1))
+print(b.cal(0.2,1))
 
 integral.changeArgs(a,0.)
 
-print(a(0.2,1))
+print(b.cal(0.2,1))
 
 ###autoD_v2:
 This version is in beta. It accepts multivariable by giving input with numpy.1darray for both 'x' and 'dOrder'. Both 'x' and 'dOrder' must have the same length. When using scalar, you have to input the index of the array this scalar corresponds to.
