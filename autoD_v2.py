@@ -53,12 +53,12 @@ class Multiply:
     def __init__(self,funcList):
         self.funcList=funcList
     def cal(self,x,dOrder):
-        check=np.nonzero(dOrder)[0]
-        if check.size==0:
+        check=np.nonzero(dOrder)
+        if check[0].size==0:
             if isinstance(dOrder, (int,float)):
                 next_cal=0
             else:
-                next_cal=np.zeros(len(dOrder))
+                next_cal=np.zeros(dOrder.shape)
             result=1.
             for n in range(len(self.funcList)):
                 result=result*self.funcList[n].cal(x,next_cal)
@@ -68,8 +68,8 @@ class Multiply:
                 diffchange=1
                 new_dOrder=dOrder-1
             else:
-                diffchange=np.zeros(len(dOrder))
-                diffchange[check[0]]=1
+                diffchange=np.zeros(dOrder.shape)
+                diffchange[check]=1
                 new_dOrder=dOrder-diffchange
             new_mul=[]
             for n in range(len(self.funcList)):
@@ -89,12 +89,12 @@ class Power:
         self.pow=pow
         
     def cal(self,x,dOrder):
-        check=np.nonzero(dOrder)[0]
-        if check.size==0:
+        check=np.nonzero(dOrder)
+        if check[0].size==0:
             if isinstance(dOrder, (int,float)):
                 next_cal=0
             else:
-                next_cal=np.zeros(len(dOrder))
+                next_cal=np.zeros(dOrder.shape)
             if isinstance(self.pow, (int, float)):
                 return self.func.cal(x,next_cal)**self.pow
             else:
@@ -104,8 +104,8 @@ class Power:
                 diffchange=1
                 new_dOrder=dOrder-1
             else:
-                diffchange=np.zeros(len(dOrder))
-                diffchange[check[0]]=1
+                diffchange=np.zeros(dOrder.shape)
+                diffchange[check]=1
                 new_dOrder=dOrder-diffchange
             if isinstance(self.pow, (int, float)):
                 new_const=Constant(self.pow)
@@ -122,20 +122,20 @@ class Exp:
         self.func=func
         
     def cal(self,x,dOrder):
-        check=np.nonzero(dOrder)[0]
-        if check.size==0:
+        check=np.nonzero(dOrder)
+        if check[0].size==0:
             if isinstance(dOrder, (int,float)):
                 next_cal=0
             else:
-                next_cal=np.zeros(len(dOrder))
+                next_cal=np.zeros(dOrder.shape)
             return np.exp(self.func.cal(x,next_cal))
         else:
             if isinstance(dOrder, (int,float)):
                 diffchange=1
                 new_dOrder=dOrder-1
             else:
-                diffchange=np.zeros(len(dOrder))
-                diffchange[check[0]]=1
+                diffchange=np.zeros(dOrder.shape)
+                diffchange[check]=1
                 new_dOrder=dOrder-diffchange
             new_mul=Multiply([Exp(self.func),Differentiate(self.func,diffchange)])
             return new_mul.cal(x,new_dOrder)
@@ -143,20 +143,20 @@ class Ln:
     def __init__(self,func):
         self.func=func
     def cal(self,x,dOrder):
-        check=np.nonzero(dOrder)[0]
-        if check.size==0:
+        check=np.nonzero(dOrder)
+        if check[0].size==0:
             if isinstance(dOrder, (int,float)):
                 next_cal=0
             else:
-                next_cal=np.zeros(len(dOrder))
+                next_cal=np.zeros(dOrder.shape)
             return np.log(self.func.cal(x,next_cal))
         else:
             if isinstance(dOrder, (int,float)):
                 diffchange=1
                 new_dOrder=dOrder-1
             else:
-                diffchange=np.zeros(len(dOrder))
-                diffchange[check[0]]=1
+                diffchange=np.zeros(dOrder.shape)
+                diffchange[check]=1
                 new_dOrder=dOrder-diffchange
             new_power=Power(self.func,-1.)
             new_diff=Differentiate(self.func,diffchange)
@@ -168,12 +168,12 @@ class Log:
         self.func=func
         self.base=base
     def cal(self,x,dOrder):
-        check=np.nonzero(dOrder)[0]
-        if check.size==0:
+        check=np.nonzero(dOrder)
+        if check[0].size==0:
             if isinstance(dOrder, (int,float)):
                 next_cal=0
             else:
-                next_cal=np.zeros(len(dOrder))
+                next_cal=np.zeros(dOrder.shape)
             if isinstance(self.base, (int, float)):
                 return np.log(self.func.cal(x,next_cal))/np.log(self.base)
             else:
@@ -189,20 +189,20 @@ class Cos:
     def __init__(self,func):
         self.func=func
     def cal(self,x,dOrder):
-        check=np.nonzero(dOrder)[0]
-        if check.size==0:
+        check=np.nonzero(dOrder)
+        if check[0].size==0:
             if isinstance(dOrder, (int,float)):
                 next_cal=0
             else:
-                next_cal=np.zeros(len(dOrder))
+                next_cal=np.zeros(dOrder.shape)
             return np.cos(self.func.cal(x,next_cal))
         else:
             if isinstance(dOrder, (int,float)):
                 diffchange=1
                 new_dOrder=dOrder-1
             else:
-                diffchange=np.zeros(len(dOrder))
-                diffchange[check[0]]=1
+                diffchange=np.zeros(dOrder.shape)
+                diffchange[check]=1
                 new_dOrder=dOrder-diffchange
             new_sin=Sin(self.func)
             new_diff=Differentiate(self.func,diffchange)
@@ -213,20 +213,20 @@ class Sin:
     def __init__(self,func):
         self.func=func
     def cal(self,x,dOrder):
-        check=np.nonzero(dOrder)[0]
-        if check.size==0:
+        check=np.nonzero(dOrder)
+        if check[0].size==0:
             if isinstance(dOrder, (int,float)):
                 next_cal=0
             else:
-                next_cal=np.zeros(len(dOrder))
+                next_cal=np.zeros(dOrder.shape)
             return np.sin(self.func.cal(x,next_cal))
         else:
             if isinstance(dOrder, (int,float)):
                 diffchange=1
                 new_drOder=dOrder-1
             else:
-                diffchange=np.zeros(len(dOrder))
-                diffchange[check[0]]=1
+                diffchange=np.zeros(dOrder.shape)
+                diffchange[check]=1
                 new_dOrder=dOrder-diffchange
             new_sin=Cos(self.func)
             new_diff=Differentiate(self.func,diffchange)
@@ -241,8 +241,8 @@ class Constant:
     def __init__(self,const):
         self.const=const
     def cal(self,x,dOrder):
-        check=np.nonzero(dOrder)[0]
-        if check.size==0:
+        check=np.nonzero(dOrder)
+        if check[0].size==0:
             return self.const
         else:             
             return 0.          
@@ -259,11 +259,13 @@ class Scalar:
             else:
                 return 0.
         else:
-            for n in range(len(dOrder)):
-                if n!= self.index:
-                    if dOrder[n]>0:
-                        return 0.
-            if dOrder[self.index]==0:
+            diffadjust=np.zeros(dOrder.shape)
+            diffadjust[index]=1
+            diffcheck=dOrder-diffadjust
+            check=np.nonzero(diffcheck)
+            if check[0].size != 0:
+                return 0.
+            elif dOrder[self.index]==0:
                 return x[self.index]
             elif dOrder[self.index]==1:
                 return 1.
