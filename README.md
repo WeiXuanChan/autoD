@@ -32,9 +32,8 @@ input object you want to do the sin operation.
 #####Constant(const):    
 change any float to a callable class object.
 
-#####Scalar(name='x'):   
-you can just use it without input.
-e.g x=autoD.Scalar().
+#####Scalar('x'):
+A scalar variable (each scalar must be independant of other variables)
 
 #####Function(fx,*args): 
 input self-defined function to convert it to usable class object for differentiation.
@@ -44,8 +43,8 @@ dOrder is the order of differentiation.
 You can change your args even after definine by calling fx.changeArgs(*new_args).
 
 ###autoD_v2:
-This version is in beta. It accepts multivariable by giving input with numpy.1darray for both 'x' and 'dOrder'. Both 'x' and 'dOrder' must have the same length. When using scalar, you have to input the index of the array this scalar corresponds to.
-e.g. x=numpy.array([x0,x1,x2]), x0=Scalar(index=0), x1=Scalar(index=1), x2=Scalar(index=2)
+This version uses python dictionary input for x and dOrder.
+e.g x={'x':1.,'y':2.:'z':3.}, the dictionary key must be the same when defining Scalar
 
 ###note
 I tried Theano (http://deeplearning.net/software/theano/) but I have no idea why it is clogging up my system RAM (~7GB, which is almost all I have). This code is easy to edit and depends on only Numpy. However you cannot use symbols such as '+', '-', '\*', '' or '**' as I have not figured out a way to decode such symbols while keeping the size of the code small (less prone to error). If you need more functionallity (I do not know what else there is to automatic differentiation as I have not explored Theano fully), know how to decode symbols easily, want to include more functions or any other issues, please leave your comments :) . I am using python3, so I do not know how well it works for python2. Thanks.
