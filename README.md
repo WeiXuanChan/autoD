@@ -42,7 +42,7 @@ x is the value of the variable you want to differentiate wrt.
 dOrder is the order of differentiation.
 You can change your args even after definine by calling fx.changeArgs(*new_args).
 
-###autoD_v2:
+###autoD_v2_1:
 This version uses python dictionary input for x and dOrder.
 e.g x={'x':1.,'y':2.:'z':3.}, the dictionary key must be the same when defining Scalar
 
