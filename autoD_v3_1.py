@@ -16,6 +16,7 @@ History:
                                         -add dependent scalars to reduce runtime
   Author: dwindz 19May2016           - v3_1
                                         -remove class creation inside class function to reduce runtime
+                                        -Multiply and Addition now accepts floats as one of the object in list
 '''
 
 '''
@@ -60,8 +61,11 @@ class Differentiate:
 class Addition:
     def __init__(self,funcList):
         self.funcList=funcList
+        for n in range(len(self.funcList)):
+            if isinstance(self.funcList[n], (int, float,complex)):
+                self.funcList[n]=Constant(self.funcList[n])
         self.dependent=[]
-        for func in funcList:
+        for func in self.funcList:
             for dependent in func.dependent:
                 self.dependent.append(dependent)
     def cal(self,x,dOrder):
