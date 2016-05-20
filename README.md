@@ -42,9 +42,12 @@ x is the value of the variable you want to differentiate wrt.
 dOrder is the order of differentiation.
 You can change your args even after definine by calling fx.changeArgs(*new_args).
 
-###autoD_v2_1:
-This version uses python dictionary input for x and dOrder.
+###autoD_v2_1 and above:
+These version uses python dictionary input for x and dOrder.
 e.g x={'x':1.,'y':2.:'z':3.}, the dictionary key must be the same when defining Scalar
+
+###autoD_v3_1 and above:
+These version optimized not neccessary calculation. When converting self-defined function into differentiatable class (autoD.Function(fx,*args,dependent='ALL')), optional input enable selecting dependent scalar. when dOrder contains a scalar name not detected in dependent, output automates to 0.
 
 ###note
 I tried Theano (http://deeplearning.net/software/theano/) but I have no idea why it is clogging up my system RAM (~7GB, which is almost all I have). This code is easy to edit and depends on only Numpy. However you cannot use symbols such as '+', '-', '\*', '' or '**' as I have not figured out a way to decode such symbols while keeping the size of the code small (less prone to error). If you need more functionallity (I do not know what else there is to automatic differentiation as I have not explored Theano fully), know how to decode symbols easily, want to include more functions or any other issues, please leave your comments :) . I am using python3, so I do not know how well it works for python2. Thanks.
