@@ -1,14 +1,11 @@
 # autoD
-autoD is a lightweight, flexible automatic differentiation for python3 based on numpy. It enable user to convert your user-defined functions into differentiatable object. Thus, it will be able to do integration and matrix filling for you (see examples).
-
-###autoD_v1:
-Use this version if you just need to differentiate one variable.
+autoD is a lightweight, flexible automatic differentiation for python3 based on numpy. It enable user to convert your user-defined functions into differentiatable object. Thus, it will be able to do integration and matrix filling for you (see examples). To calculate the differential, call any the function ".cal(x,dOrder)" of any class in this module, where x is the 
 
 ###Function description:
-#####Addition(funcList):
+#####Addition(funcList): objects in list can be float(for v3_1 and above)
 input list of objects you want to add. funcList=[func1,func2,func3,...]
 
-#####Multiply(funcList): 
+#####Multiply(funcList): objects in list can be float(for v3_1 and above)
 input list of objects you want to multiply. funcList=[func1,func2,func3,...]
 
 #####Power(func,pow):    
@@ -29,24 +26,29 @@ input object you want to do the cosine operation.
 #####Sin(func):          
 input object you want to do the sin operation.
 
-#####Constant(const):    
+#####Constant(const):
 change any float to a callable class object.
 
-#####Scalar('x'):
+#####Scalar(name):
 A scalar variable (each scalar must be independant of other variables)
 
-#####Function(fx,*args): 
+#####Function(fx,*args,dependent='ALL'): 
 input self-defined function to convert it to usable class object for differentiation.
 Self-defined function must be able to accept the input in the form (x,dOrder,*args).
 x is the value of the variable you want to differentiate wrt.
 dOrder is the order of differentiation.
 You can change your args even after definine by calling fx.changeArgs(*new_args).
 
-###autoD_v2_1 and above:
+###Versions
+
+#####autoD_v1:
+Use this version if you just need to differentiate one variable.
+
+#####autoD_v2_1 and above:
 These version uses python dictionary input for x and dOrder.
 e.g x={'x':1.,'y':2.:'z':3.}, the dictionary key must be the same when defining Scalar
 
-###autoD_v3_1 and above:
+#####autoD_v3_1 and above:
 These version optimized not neccessary calculation. When converting self-defined function into differentiatable class (autoD.Function(fx,*args,dependent='ALL')), optional input enable selecting dependent scalar. when dOrder contains a scalar name not detected in dependent, output automates to 0.
 
 ###note
