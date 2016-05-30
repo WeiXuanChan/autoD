@@ -9,11 +9,13 @@ History:
 '''
 
 import numpy as np
-import autoD_v1 as ad
+import autoD as ad
 
 def func(x,dOrder,fx,startIntegration):
-    if dOrder>0:
-        return fx.cal(x,dOrder-1)
+    if dOrder['x']>0:
+      new_dOrder=dOrder.copy()
+      new_dOrder['x']=dOrder['x']-1
+      return fx.cal(x,new_dOrder)
     else:
         xsteps=np.array(range(101))/100*(x-startIntegration)+startIntegration
         tosum=np.zeros(101)
@@ -22,10 +24,10 @@ def func(x,dOrder,fx,startIntegration):
         return np.trapz(tosum,x=xsteps)
 
 
-x=ad.Scalar()
+x=ad.Scalar('x')
 a=ad.Power(x,2.)
 integral=ad.Function(func,x,0.)
 b=ad.Ln(integral)
-print(b.cal(0.2,1))
+print(b.cal({'x':0.2},{'x':1}))
 integral.changeArgs(a,0.)
-print(b.cal(0.2,1))
+print(b.cal({'x':0.2},{'x':1}))
