@@ -53,9 +53,10 @@ class Differentiate:
                 new_dOrder[var]=self.inputorder[var]+dOrder[var]
             else:
                 new_dOrder[var]=self.inputorder[var]+0
-        for var in new_dOrder:
-            if new_dOrder[var]>0 and (var not in self.dependent):
-                return 0.
+        if 'ALL' not in self.dependent:
+            for var in new_dOrder:
+                if new_dOrder[var]>0 and (var not in self.dependent):
+                    return 0.
         return self.inputFunc.cal(x,new_dOrder)
         
 class Addition:
@@ -67,11 +68,13 @@ class Addition:
         self.dependent=[]
         for func in self.funcList:
             for dependent in func.dependent:
-                self.dependent.append(dependent)
+                if dependent not in self.dependent:
+                    self.dependent.append(dependent)
     def cal(self,x,dOrder):
-        for var in dOrder:
-            if dOrder[var]>0 and (var not in self.dependent) and ('ALL' not in self.dependent):
-                return 0.
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return 0.
         temp=[]
         for n in range(len(self.funcList)):
             temp.append(self.funcList[n].cal(x,dOrder))
@@ -90,12 +93,14 @@ class Multiply:
                 self.coef=self.coef*func
         for func in self.funcList:
             for dependent in func.dependent:
-                self.dependent.append(dependent)
+                if dependent not in self.dependent:
+                    self.dependent.append(dependent)
         self.rdOL=rotatingdOrderList(len(self.funcList))
     def cal(self,x,dOrder):
-        for var in dOrder:
-            if dOrder[var]>0 and (var not in self.dependent) and ('ALL' not in self.dependent):
-                return 0.
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         addList=[]
         pastCalculation={}
@@ -135,9 +140,10 @@ class Power:
             self.new_exp=None
         self.rdOL=rotatingdOrderListPower()
     def cal(self,x,dOrder):
-        for var in dOrder:
-            if dOrder[var]>0 and (var not in self.dependent) and ('ALL' not in self.dependent):
-                return 0.
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return 0.
         if self.pow==1:
             return self.func.cal(x,dOrder)
         elif self.pow==0:
@@ -181,9 +187,10 @@ class Exp:
         self.dependent=func.dependent[:]
         self.rdOL=rotatingdOrderListPower()
     def cal(self,x,dOrder):
-        for var in dOrder:
-            if dOrder[var]>0 and (var not in self.dependent) and ('ALL' not in self.dependent):
-                return 0.
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         exp_value=np.exp(self.func.cal(x,{}))
         if len(dOrderList)==0:
@@ -214,9 +221,10 @@ class Ln:
         self.dependent=func.dependent[:]
         self.rdOL=rotatingdOrderListPower()
     def cal(self,x,dOrder):
-        for var in dOrder:
-            if dOrder[var]>0 and (var not in self.dependent) and ('ALL' not in self.dependent):
-                return 0.
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         if len(dOrderList)==0:
             return np.log(self.func.cal(x,{}))
@@ -262,9 +270,10 @@ class Log:
             self.new_ln=Ln(self.func)
             self.coef=-1./np.log(self.base)
     def cal(self,x,dOrder):
-        for var in dOrder:
-            if dOrder[var]>0 and (var not in self.dependent) and ('ALL' not in self.dependent):
-                return 0.
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return 0.
         return self.coef*self.new_ln.cal(x,dOrder)
             
 class Cos:
@@ -273,9 +282,10 @@ class Cos:
         self.dependent=func.dependent[:]
         self.rdOL=rotatingdOrderListPower()
     def cal(self,x,dOrder):
-        for var in dOrder:
-            if dOrder[var]>0 and (var not in self.dependent) and ('ALL' not in self.dependent):
-                return 0.
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         cosValue=np.cos(self.func.cal(x,{}))
         if len(dOrderList)==0:
@@ -320,9 +330,10 @@ class Sin:
         self.dependent=func.dependent[:]
         self.rdOL=rotatingdOrderListPower()
     def cal(self,x,dOrder):
-        for var in dOrder:
-            if dOrder[var]>0 and (var not in self.dependent) and ('ALL' not in self.dependent):
-                return 0.
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         sinValue=np.sin(self.func.cal(x,{}))
         if len(dOrderList)==0:
@@ -401,7 +412,7 @@ class Scalar:
 #---------------Flexible Functions-----------------#
 '''
 class Function:
-    def __init__(self,func,*args,dependent='ALL'):
+    def __init__(self,func,*args,dependent=['ALL']):
         self.func=func
         self.args=args
         self.dependent=dependent
