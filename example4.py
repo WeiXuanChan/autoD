@@ -15,14 +15,14 @@ def caly(x,dOrder,steps,xmin,xmax):
     eqnarray=np.zeros(steps+1)
     deltax=(xmax-xmin)/steps
     #fill eqnarray with finite difference
-    index=int((x-xmin)/(xmax-xmin)*steps)
+    index=int((x['x']-xmin)/(xmax-xmin)*steps)
     #for clarity this part is manual, you change change it to a function which calls onto itself for higher dOrder
-    if dOrder==0:
+    if dOrder['x']==0:
         eqnarray[index]=1.
-    elif dOrder==1:
+    elif dOrder['x']==1:
         eqnarray[index+1]=1./(2.*deltax)
         eqnarray[index-1]=-1./(2.*deltax)
-    elif dOrder==2:
+    elif dOrder['x']==2:
         eqnarray[index+1]=1./deltax/deltax
         eqnarray[index]=-2./deltax/deltax
         eqnarray[index-1]=1./deltax/deltax
@@ -31,17 +31,17 @@ def caly(x,dOrder,steps,xmin,xmax):
 steps=100
 xmin=0.
 xmax=200.
-symbolic_x=ad.Scalar()
+symbolic_x=ad.Scalar('x')
 x=np.array(range(steps+1))/steps*(xmax-xmin)+xmin
 y=ad.Function(caly,steps,xmin,xmax)
-d0=ad.Multiply([ad.Constant(-3.),y])
-d1=ad.Multiply([ad.Constant(-2.),ad.Differentiate(y,1)])
+d0=ad.Multiply([-3.,y])
+d1=ad.Multiply([-2.,ad.Differentiate(y,1)])
 d2=ad.Multiply([symbolic_x,ad.Differentiate(y,2)])
 func=ad.Addition([d0,d1,d2])
 matrix=np.zeros((steps+1,steps+1))
 
 #the first and last row is remove to add in boundary equation
 for n in range(1,steps):
-    matrix[n,:]=func.cal(x[n],0)
+    matrix[n,:]=func.cal({'x':x[n]},{})
 
 print(matrix)
