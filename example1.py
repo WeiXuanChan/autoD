@@ -9,10 +9,10 @@ History:
 '''
 
 import numpy as np
-import autoD_v1 as ad
+import autoD as ad
 
-x=ad.Scalar()
-a=ad.Multiply([ad.Constant(2.),ad.Cos(ad.Power(x,2.))])
+x=ad.Scalar('x')
+a=ad.Multiply([2.,ad.Cos(ad.Power(x,2.))])
 b=ad.Differentiate(ad.Sin(ad.Ln(x)),1)
-fx=ad.Addition([a,ad.Multiply([ad.Constant(-1),b])])
-print(fx.cal(0.2,1))
+fx=ad.Addition([a,ad.Multiply([-1,b])])
+print(fx.cal({'x':0.2},{'x':1}))
