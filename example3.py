@@ -9,15 +9,14 @@ History:
 '''
 
 import numpy as np
-import autoD_v2 as ad
+import autoD as ad
 
-x=ad.Scalar(index=0)
+x=ad.Scalar('x')
 
-y=ad.Scalar(index=1)
+y=ad.Scalar('y')
 
 a=ad.Multiply([ad.Power(x,2.),ad.Ln(y)])
 
-l1=0.2
-l2=2.2
-print(a.cal(np.array([l1,l2]),np.array([1,2])))
-print(-2.*l1/l2/l2)
+inputPoint={'x':0.2,'y':2.2}
+print(a.cal(inputPoint,{'x':1,'y':2}))
+print(-2.*inputPoint['x']/inputPoint['y']/inputPoint['y'])
