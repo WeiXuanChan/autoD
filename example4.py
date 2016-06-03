@@ -34,10 +34,10 @@ xmax=200.
 symbolic_x=ad.Scalar('x')
 x=np.array(range(steps+1))/steps*(xmax-xmin)+xmin
 y=ad.Function(caly,steps,xmin,xmax)
-d0=ad.Multiply([-3.,y])
-d1=ad.Multiply([-2.,ad.Differentiate(y,1)])
-d2=ad.Multiply([symbolic_x,ad.Differentiate(y,2)])
-func=ad.Addition([d0,d1,d2])
+d0=-3.*y
+d1=-2.*ad.Differentiate(y,1)
+d2=symbolic_x*ad.Differentiate(y,2)
+func=d0+d1+d2
 matrix=np.zeros((steps+1,steps+1))
 
 #the first and last row is remove to add in boundary equation
