@@ -25,7 +25,7 @@ def func(x,dOrder,fx,startIntegration):
 
 
 x=ad.Scalar('x')
-a=ad.Power(x,2.)
+a=x**2.
 integral=ad.Function(func,x,0.)
 b=ad.Ln(integral)
 print(b.cal({'x':0.2},{'x':1}))
