@@ -374,11 +374,24 @@ class Sin:
             addList.append(mul)
             self.rdOL.incr()
         return sum(addList)
+'''
+#---------------Complex Functions-------------------------------#
+'''
 class Conjugate:
     def __init__(self,func):
         self.func=func
     def cal(self,x,dOrder):
         return np.conjugate(self.func(x,dOrder))
+class Real:
+    def __init__(self,func):
+        self.func=func
+    def cal(self,x,dOrder):
+        return self.func(x,dOrder).real
+class Imaginary:
+    def __init__(self,func):
+        self.func=func
+    def cal(self,x,dOrder):
+        return self.func(x,dOrder).imag
 '''
 #---------------Base End Functions-------------------------------#
 '''
