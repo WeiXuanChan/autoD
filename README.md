@@ -26,6 +26,9 @@ input object you want to do the cosine operation.
 #####Sin(func):          
 input object you want to do the sin operation.
 
+#####Conjugate(func):
+input object you want to do a complex conjugate
+
 #####Constant(const):
 change any float to a callable class object.
 
