@@ -15,7 +15,7 @@ x=ad.Scalar('x')
 
 y=ad.Scalar('y')
 
-a=ad.Multiply([ad.Power(x,2.),ad.Ln(y)])
+a=x**2.*ad.Ln(y)
 
 inputPoint={'x':0.2,'y':2.2}
 print(a.cal(inputPoint,{'x':1,'y':2}))
