@@ -19,7 +19,8 @@ History:
                                         -Multiply and Addition now accepts floats as one of the object in list
 #####################Set as Main version########################
   Author: dwindz 03Jun2016           - v3_2
-                                        -added complex conjugate
+                                        -added complex conjugate, real and imaginary
+                                        -added shortcut method __add__ etc
 '''
 
 '''
@@ -40,11 +41,42 @@ Flexible functions accepts user-defined function and turn them into callable obj
 '''
 
 import numpy as np
+
+'''
+--------------------Main Class-----------------
+'''   
+class AD:
+    def __pow__(self, val):
+        return Power(self,val)
+    def __rpow__(self, val):
+        return Power(val,self)
+    def __add__(self, val):
+        return Addition([self,val])
+    def __radd__(self, val):
+        if val == 0:
+            return self
+        else:
+            return Addition([self,val])
+    def __sub__(self, val):
+        return Addition([self,Multiply([-1.,val])])
+    def __rsub__(self,val):
+        return Addition([val,Multiply([-1.,self])])
+    def __mul__(self, val):
+        return Multiply([self,val]) 
+    def __rmul__(self, val):
+        if val == 1:
+            return self
+        else:
+            return Multiply([self,val])
+    def __truediv__(self, val):
+        return Multiply([self,Power(val,-1)])
+    def __rtruediv__(self, val):
+        return Multiply([val,Power(self,-1)])
 '''
 #---------------Basic Functions-------------------------------#
 '''
 
-class Differentiate:
+class Differentiate(AD):
     def __init__(self,func,order):
         self.inputFunc=func
         self.inputorder=order
@@ -62,7 +94,7 @@ class Differentiate:
                     return 0.
         return self.inputFunc.cal(x,new_dOrder)
         
-class Addition:
+class Addition(AD):
     def __init__(self,funcList):
         self.funcList=funcList
         for n in range(len(self.funcList)):
@@ -84,7 +116,7 @@ class Addition:
         result=sum(temp)
         return result
               
-class Multiply:
+class Multiply(AD):
     def __init__(self,funcList):
         self.funcList=[]
         self.coef=1.
@@ -129,9 +161,12 @@ class Multiply:
             self.rdOL.incr()
         return sum(addList)
 
-class Power:
+class Power(AD):
     def __init__(self,func,pow):
-        self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         self.pow=pow 
         self.dependent=func.dependent[:]
         if not(isinstance(self.pow, (int, float,complex))):
@@ -184,7 +219,7 @@ class Power:
             self.rdOL.incr()
         return sum(addList)
     
-class Exp:
+class Exp(AD):
     def __init__(self,func):
         self.func=func
         self.dependent=func.dependent[:]
@@ -218,7 +253,7 @@ class Exp:
             self.rdOL.incr()
         return sum(addList)*exp_value
         
-class Ln:
+class Ln(AD):
     def __init__(self,func):
         self.func=func
         self.dependent=func.dependent[:]
@@ -258,7 +293,7 @@ class Ln:
             self.rdOL.incr()
         return sum(addList)
         
-class Log:
+class Log(AD):
     def __init__(self,func,base):
         self.func=func
         self.base=base
@@ -279,7 +314,7 @@ class Log:
                     return 0.
         return self.coef*self.new_ln.cal(x,dOrder)
             
-class Cos:
+class Cos(AD):
     def __init__(self,func):
         self.func=func
         self.dependent=func.dependent[:]
@@ -327,7 +362,7 @@ class Cos:
             self.rdOL.incr()
         return sum(addList)
         
-class Sin:
+class Sin(AD):
     def __init__(self,func):
         self.func=func
         self.dependent=func.dependent[:]
@@ -377,17 +412,17 @@ class Sin:
 '''
 #---------------Complex Functions-------------------------------#
 '''
-class Conjugate:
+class Conjugate(AD):
     def __init__(self,func):
         self.func=func
     def cal(self,x,dOrder):
         return np.conjugate(self.func(x,dOrder))
-class Real:
+class Real(AD):
     def __init__(self,func):
         self.func=func
     def cal(self,x,dOrder):
         return self.func(x,dOrder).real
-class Imaginary:
+class Imaginary(AD):
     def __init__(self,func):
         self.func=func
     def cal(self,x,dOrder):
@@ -396,7 +431,7 @@ class Imaginary:
 #---------------Base End Functions-------------------------------#
 '''
             
-class Constant:
+class Constant(AD):
     def __init__(self,const):
         self.const=const
         self.dependent=[]
@@ -408,7 +443,7 @@ class Constant:
         else:
             return self.const
          
-class Scalar:
+class Scalar(AD):
     def __init__(self,name):
         self.name=name
         self.dependent=[name]
@@ -426,12 +461,11 @@ class Scalar:
         if returnX:
             return x[self.name]
         else:
-            return 1.
-        
+            return 1. 
 '''
 #---------------Flexible Functions-----------------#
 '''
-class Function:
+class Function(AD):
     def __init__(self,func,*args,dependent=['ALL']):
         self.func=func
         self.args=args
@@ -537,6 +571,4 @@ class rotatingdOrderListPower:
             arrangeList[self.rotatingList[n]].append(self.dOrderList[n])
         return arrangeList
                 
-        
-            
     
