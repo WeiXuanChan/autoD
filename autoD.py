@@ -72,6 +72,8 @@ class AD:
         return Multiply([self,Power(val,-1)])
     def __rtruediv__(self, val):
         return Multiply([val,Power(self,-1)])
+    def __neg__(self):
+        return Multiply([-1.,self])
 '''
 #---------------Basic Functions-------------------------------#
 '''
