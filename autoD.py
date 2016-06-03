@@ -18,6 +18,8 @@ History:
                                         -remove class creation inside class function to reduce runtime
                                         -Multiply and Addition now accepts floats as one of the object in list
 #####################Set as Main version########################
+  Author: dwindz 03Jun2016           - v3_2
+                                        -added complex conjugate
 '''
 
 '''
@@ -372,7 +374,11 @@ class Sin:
             addList.append(mul)
             self.rdOL.incr()
         return sum(addList)
-
+class Conjugate:
+    def __init__(self,func):
+        self.func=func
+    def cal(self,x,dOrder):
+        return np.conjugate(self.func(x,dOrder))
 '''
 #---------------Base End Functions-------------------------------#
 '''
