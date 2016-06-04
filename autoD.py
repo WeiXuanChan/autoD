@@ -82,7 +82,10 @@ class Differentiate(AD):
     def __init__(self,func,order):
         self.inputFunc=func
         self.inputorder=order
-        self.dependent=func.dependent[:]
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
     def cal(self,x,dOrder):
         new_dOrder=dOrder.copy()
         for var in self.inputorder:
@@ -104,9 +107,13 @@ class Addition(AD):
                 self.funcList[n]=Constant(self.funcList[n])
         self.dependent=[]
         for func in self.funcList:
-            for dependent in func.dependent:
-                if dependent not in self.dependent:
-                    self.dependent.append(dependent)
+            try:
+                for dependent in func.dependent:
+                    if dependent not in self.dependent:
+                        self.dependent.append(dependent)
+            except AttributeError:
+                self.dependent=['ALL']
+            
     def cal(self,x,dOrder):
         if 'ALL' not in self.dependent:
             for var in dOrder:
@@ -129,9 +136,12 @@ class Multiply(AD):
             else:
                 self.coef=self.coef*func
         for func in self.funcList:
-            for dependent in func.dependent:
-                if dependent not in self.dependent:
-                    self.dependent.append(dependent)
+            try:
+                for dependent in func.dependent:
+                    if dependent not in self.dependent:
+                        self.dependent.append(dependent)
+            except AttributeError:
+                self.dependent=['ALL']
         self.rdOL=rotatingdOrderList(len(self.funcList))
     def cal(self,x,dOrder):
         if 'ALL' not in self.dependent:
@@ -170,12 +180,18 @@ class Power(AD):
         else:
             self.func=func
         self.pow=pow 
-        self.dependent=func.dependent[:]
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
         if not(isinstance(self.pow, (int, float,complex))):
             self.new_exp=Exp(Multiply([Ln(self.func),self.pow]))
-            for dependent in self.pow.dependent:
-                if dependent not in self.dependent:
-                    self.dependent.append(dependent)
+            try:
+                for dependent in pow.dependent:
+                    if dependent not in self.dependent:
+                        self.dependent.append(dependent)
+            except AttributeError:
+                self.dependent=['ALL']
         else:
             self.new_exp=None
         self.rdOL=rotatingdOrderListPower()
@@ -224,7 +240,10 @@ class Power(AD):
 class Exp(AD):
     def __init__(self,func):
         self.func=func
-        self.dependent=func.dependent[:]
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
     def cal(self,x,dOrder):
         if 'ALL' not in self.dependent:
@@ -258,7 +277,10 @@ class Exp(AD):
 class Ln(AD):
     def __init__(self,func):
         self.func=func
-        self.dependent=func.dependent[:]
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
     def cal(self,x,dOrder):
         if 'ALL' not in self.dependent:
@@ -299,7 +321,10 @@ class Log(AD):
     def __init__(self,func,base):
         self.func=func
         self.base=base
-        self.dependent=func.dependent[:]
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
         if not(isinstance(self.base, (int, float,complex))):
             self.new_ln=Multiply([Ln(self.func),Power(Ln(self.base),-1.)])
             self.coef=1.
@@ -319,7 +344,10 @@ class Log(AD):
 class Cos(AD):
     def __init__(self,func):
         self.func=func
-        self.dependent=func.dependent[:]
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
     def cal(self,x,dOrder):
         if 'ALL' not in self.dependent:
@@ -367,7 +395,10 @@ class Cos(AD):
 class Sin(AD):
     def __init__(self,func):
         self.func=func
-        self.dependent=func.dependent[:]
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
     def cal(self,x,dOrder):
         if 'ALL' not in self.dependent:
@@ -417,18 +448,30 @@ class Sin(AD):
 class Conjugate(AD):
     def __init__(self,func):
         self.func=func
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
     def cal(self,x,dOrder):
-        return np.conjugate(self.func(x,dOrder))
+        return np.conjugate(self.func.cal(x,dOrder))
 class Real(AD):
     def __init__(self,func):
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
         self.func=func
     def cal(self,x,dOrder):
-        return self.func(x,dOrder).real
+        return self.func.cal(x,dOrder).real
 class Imaginary(AD):
     def __init__(self,func):
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
         self.func=func
     def cal(self,x,dOrder):
-        return self.func(x,dOrder).imag
+        return self.func.cal(x,dOrder).imag
 '''
 #---------------Base End Functions-------------------------------#
 '''
