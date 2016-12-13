@@ -21,6 +21,9 @@ History:
   Author: dwindz 03Jun2016           - v3_2
                                         -added complex conjugate, real and imaginary
                                         -added shortcut method __add__ etc
+  Author: dwindz 13Dec2016           - v3.3
+                                        -added absolute
+                                        
 '''
 
 '''
@@ -472,6 +475,16 @@ class Imaginary(AD):
         self.func=func
     def cal(self,x,dOrder):
         return self.func.cal(x,dOrder).imag
+class Absolute(AD):
+    def __init__(self,func):
+        self.func=func
+        self.abs=(Real(func)**2.-Imaginary(func)**2.)**0.5
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
+    def cal(self,x,dOrder):
+        return self.abs.cal(x,dOrder)
 '''
 #---------------Base End Functions-------------------------------#
 '''
