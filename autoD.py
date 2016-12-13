@@ -23,6 +23,7 @@ History:
                                         -added shortcut method __add__ etc
   Author: dwindz 13Dec2016           - v3.3
                                         -added absolute
+                                        -added hyperbolic functions
                                         
 '''
 
@@ -394,7 +395,17 @@ class Cos(AD):
             addList.append(mul)
             self.rdOL.incr()
         return sum(addList)
-        
+class Cosh(AD):
+    def __init__(self,func):
+        self.func=func
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
+        self.cosh=Cos(func*1j)
+    def cal(self,x,dOrder):
+        return self.cosh.cal(x,dOrder)
+    
 class Sin(AD):
     def __init__(self,func):
         self.func=func
@@ -445,6 +456,37 @@ class Sin(AD):
             addList.append(mul)
             self.rdOL.incr()
         return sum(addList)
+class Sinh(AD):
+    def __init__(self,func):
+        self.func=func
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
+        self.sinh=-1j*Sin(func*1j)
+    def cal(self,x,dOrder):
+        return self.sinh.cal(x,dOrder)
+    
+class Tan(AD):
+    def __init__(self,func):
+        self.func=func
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
+        self.tan=Sin(func)/Cos(func)
+    def cal(self,x,dOrder):
+        return self.tan.cal(x,dOrder)
+class Tanh(AD):
+    def __init__(self,func):
+        self.func=func
+        try:
+            self.dependent=func.dependent[:]
+        except AttributeError:
+            self.dependent=['ALL']
+        self.tanh=-1j*Tan(func*1j)
+    def cal(self,x,dOrder):
+        return self.tanh.cal(x,dOrder)
 '''
 #---------------Complex Functions-------------------------------#
 '''
