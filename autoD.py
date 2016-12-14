@@ -1,6 +1,6 @@
 '''
 File: autoD.py
-Description: Single Scalar automatic differentiation
+Description: Single Scalar automatic differentiation version3.3.0
 History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
@@ -14,17 +14,16 @@ History:
   Author: dwindz 18May2016           - v3
                                         -corrected bug in Power where power goes to -1 from 0
                                         -add dependent scalars to reduce runtime
-  Author: dwindz 19May2016           - v3_1
+  Author: dwindz 19May2016           - v3.1
                                         -remove class creation inside class function to reduce runtime
                                         -Multiply and Addition now accepts floats as one of the object in list
 #####################Set as Main version########################
-  Author: dwindz 03Jun2016           - v3_2
+  Author: dwindz 03Jun2016           - v3.2
                                         -added complex conjugate, real and imaginary
                                         -added shortcut method __add__ etc
   Author: dwindz 13Dec2016           - v3.3
                                         -added absolute
-                                        -added hyperbolic functions
-                                        
+
 '''
 
 '''
@@ -45,7 +44,7 @@ Flexible functions accepts user-defined function and turn them into callable obj
 '''
 
 import numpy as np
-
+print('autoD import')
 '''
 --------------------Main Class-----------------
 '''   
@@ -244,6 +243,10 @@ class Power(AD):
 class Exp(AD):
     def __init__(self,func):
         self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -281,6 +284,10 @@ class Exp(AD):
 class Ln(AD):
     def __init__(self,func):
         self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -324,6 +331,10 @@ class Ln(AD):
 class Log(AD):
     def __init__(self,func,base):
         self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         self.base=base
         try:
             self.dependent=func.dependent[:]
@@ -348,6 +359,10 @@ class Log(AD):
 class Cos(AD):
     def __init__(self,func):
         self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -398,6 +413,10 @@ class Cos(AD):
 class Cosh(AD):
     def __init__(self,func):
         self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -405,10 +424,13 @@ class Cosh(AD):
         self.cosh=Cos(func*1j)
     def cal(self,x,dOrder):
         return self.cosh.cal(x,dOrder)
-    
 class Sin(AD):
     def __init__(self,func):
         self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -459,6 +481,10 @@ class Sin(AD):
 class Sinh(AD):
     def __init__(self,func):
         self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -466,10 +492,13 @@ class Sinh(AD):
         self.sinh=-1j*Sin(func*1j)
     def cal(self,x,dOrder):
         return self.sinh.cal(x,dOrder)
-    
 class Tan(AD):
     def __init__(self,func):
         self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -480,6 +509,10 @@ class Tan(AD):
 class Tanh(AD):
     def __init__(self,func):
         self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -493,6 +526,10 @@ class Tanh(AD):
 class Conjugate(AD):
     def __init__(self,func):
         self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -501,31 +538,44 @@ class Conjugate(AD):
         return np.conjugate(self.func.cal(x,dOrder))
 class Real(AD):
     def __init__(self,func):
+        self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-        self.func=func
     def cal(self,x,dOrder):
         return self.func.cal(x,dOrder).real
 class Imaginary(AD):
     def __init__(self,func):
+        self.func=func
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-        self.func=func
     def cal(self,x,dOrder):
         return self.func.cal(x,dOrder).imag
 class Absolute(AD):
     def __init__(self,func):
         self.func=func
-        self.abs=(Real(func)**2.+Imaginary(func)**2.)**0.5
+        if isinstance(func, (int, float,complex)):
+            self.func=Constant(func)
+        else:
+            self.func=func
+        self.abs=(Real(self.func)**2.+Imaginary(self.func)**2.)**0.5
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
     def cal(self,x,dOrder):
+        
         return self.abs.cal(x,dOrder)
 '''
 #---------------Base End Functions-------------------------------#
@@ -671,4 +721,3 @@ class rotatingdOrderListPower:
             arrangeList[self.rotatingList[n]].append(self.dOrderList[n])
         return arrangeList
                 
-    
