@@ -520,7 +520,7 @@ class Imaginary(AD):
 class Absolute(AD):
     def __init__(self,func):
         self.func=func
-        self.abs=(Real(func)**2.-Imaginary(func)**2.)**0.5
+        self.abs=(Real(func)**2.+Imaginary(func)**2.)**0.5
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
