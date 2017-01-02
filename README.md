@@ -23,8 +23,30 @@ input object you want to do the natural logarithmic operation.
 #####Cos(func):          
 input object you want to do the cosine operation.
 
+#####Cosh(func):          
+input object you want to do the hyperbolic cosine operation. (Dependent on Cos)
+
 #####Sin(func):          
-input object you want to do the sin operation.
+input object you want to do the sine operation.
+
+#####Sinh(func):          
+input object you want to do the hyperbolic sine operation. (Dependent on Sin)
+
+#####Tan(func):          
+input object you want to do the tangent operation. (Dependent on Sin and Cos)
+
+#####Tanh(func):          
+input object you want to do the hyperbolic tangent operation. (Dependent on Exp)
+This function provides alternatives calculations to prevent value overflow.
+
+#####Real(func):
+input object you want to do discard the imaginary term.
+
+#####Imaginary(func):
+input object you want to do discard the real term.
+
+#####Absolute(func):
+input object you want to do find the absolute value.
 
 #####Conjugate(func):
 input object you want to do a complex conjugate
