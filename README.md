@@ -1,18 +1,18 @@
 # autoD
 autoD is a lightweight, flexible automatic differentiation for python3 based on numpy. It enable user to convert your user-defined functions into differentiatable object. Thus, it will be able to do integration and matrix filling for you (see examples). To calculate the differential, call the function ".cal(x,dOrder)" of any class in this module, where 'x' is the value of independent scalars and 'dOrder' is the order of differentiation. Both 'x' and 'dOrder' are dictionaries.
 
-###Function description:
-#####Addition(funcList): objects in list can be float
+###Function description: (supported operations '+', '-', '\*', '/', '\*\*',
+#####Addition(funcList): objects in list can be non autoD objects
 input list of objects you want to add. funcList=[func1,func2,func3,...]
 
-#####Multiply(funcList): objects in list can be float
+#####Multiply(funcList): objects in list can be non autoD objects
 input list of objects you want to multiply. funcList=[func1,func2,func3,...]
 
 #####Power(func,pow):    
-input an object and the power for power operation (pow can be a float or another func object).
+input an object and the power for power operation (pow can be non autoD object).
 
 #####Log(func,base):     
-input an object and the base for logarithmic operation (base can be a float or another func object).
+input an object and the base for logarithmic operation (base can be non autoD object).
 
 #####Exp(func):          
 input object you want to do the operation e^.
@@ -52,7 +52,7 @@ input object you want to do find the absolute value.
 input object you want to do a complex conjugate
 
 #####Constant(const):
-change any float to a callable class object.
+change any float or complex number to a callable autoD class object.
 
 #####Scalar(name):
 A scalar variable (each scalar must be independant of other variables)
