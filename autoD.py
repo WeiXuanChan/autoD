@@ -517,9 +517,13 @@ class Tanh(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-        self.tanh=-1j*Tan(func*1j)
+        self.tanh_negative=(1-Exp(-2.*func))/(1+Exp(-2.*func))
+        self.tanh_positive=(Exp(2.*func)-1)/(Exp(2.*func)+1)
     def cal(self,x,dOrder):
-        return self.tanh.cal(x,dOrder)
+        temp_result=self.tanh_negative.cal(x,dOrder)
+        if not(float('-inf')<np.abs(temp_result)<float('inf')):
+            temp_result=self.tanh_positive.cal(x,dOrder)
+        return temp_result
 '''
 #---------------Complex Functions-------------------------------#
 '''
