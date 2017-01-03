@@ -23,6 +23,11 @@ History:
                                         -added shortcut method __add__ etc
   Author: dwindz 13Dec2016           - v3.3
                                         -added absolute
+  Author: dwindz 02Jan2017           - v3.4
+                                        -added hyperbolic trigo functions
+  Author: dwindz 03Jan2017           - v3.5
+                                        -added debug print out
+                                       
 
 '''
 
@@ -49,6 +54,8 @@ print('autoD import')
 --------------------Main Class-----------------
 '''   
 class AD:
+    self.debugPrintout=False
+    self.debugName=''
     def __pow__(self, val):
         return Power(self,val)
     def __rpow__(self, val):
@@ -77,6 +84,21 @@ class AD:
         return Multiply([val,Power(self,-1)])
     def __neg__(self):
         return Multiply([-1.,self])
+    def debugOn(self,name=self.debugName):
+        self.debugPrintout=True
+        self.debugName=name
+        return;
+    def debugOff(self):
+        self.debugPrintout=False
+        return;
+    def debugPrint(self,x,dorder,result):
+        if self.debugPrintout:
+            print(self.debugName,':')
+            print('    x=',x)
+            print('    differential=',dOrder)
+            print('    value=',result)
+        return;
+        
 '''
 #---------------Basic Functions-------------------------------#
 '''
@@ -100,7 +122,9 @@ class Differentiate(AD):
             for var in new_dOrder:
                 if new_dOrder[var]>0 and (var not in self.dependent):
                     return 0.
-        return self.inputFunc.cal(x,new_dOrder)
+        result=self.inputFunc.cal(x,new_dOrder)
+        self.debugPrint(x,dorder,result)
+        return result
         
 class Addition(AD):
     def __init__(self,funcList):
@@ -126,6 +150,7 @@ class Addition(AD):
         for n in range(len(self.funcList)):
             temp.append(self.funcList[n].cal(x,dOrder))
         result=sum(temp)
+        self.debugPrint(x,dorder,result)
         return result
               
 class Multiply(AD):
@@ -174,7 +199,9 @@ class Multiply(AD):
                     mul=mul*temp_value
             addList.append(mul)
             self.rdOL.incr()
-        return sum(addList)
+        result=sum(addList)
+        self.debugPrint(x,dorder,result)
+        return result
 
 class Power(AD):
     def __init__(self,func,pow):
@@ -238,7 +265,9 @@ class Power(AD):
                             mul=mul*temp_value
                 addList.append(mul)
             self.rdOL.incr()
-        return sum(addList)
+        result=sum(addList)
+        self.debugPrint(x,dorder,result)
+        return result
     
 class Exp(AD):
     def __init__(self,func):
@@ -279,7 +308,9 @@ class Exp(AD):
                         mul=mul*temp_value
             addList.append(mul)
             self.rdOL.incr()
-        return sum(addList)*exp_value
+        result=sum(addList)*exp_value
+        self.debugPrint(x,dorder,result)
+        return 
         
 class Ln(AD):
     def __init__(self,func):
@@ -326,7 +357,9 @@ class Ln(AD):
                         mul=mul*temp_value
             addList.append(mul)
             self.rdOL.incr()
-        return sum(addList)
+        result=sum(addList)
+        self.debugPrint(x,dorder,result)
+        return result
         
 class Log(AD):
     def __init__(self,func,base):
@@ -354,7 +387,9 @@ class Log(AD):
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
                     return 0.
-        return self.coef*self.new_ln.cal(x,dOrder)
+        result=self.coef*self.new_ln.cal(x,dOrder)
+        self.debugPrint(x,dorder,result)
+        return result
             
 class Cos(AD):
     def __init__(self,func):
@@ -409,7 +444,9 @@ class Cos(AD):
                 mul=mul*sinValue
             addList.append(mul)
             self.rdOL.incr()
-        return sum(addList)
+        result=sum(addList)
+        self.debugPrint(x,dorder,result)
+        return result
 class Cosh(AD):
     def __init__(self,func):
         self.func=func
@@ -423,7 +460,9 @@ class Cosh(AD):
             self.dependent=['ALL']
         self.cosh=Cos(func*1j)
     def cal(self,x,dOrder):
-        return self.cosh.cal(x,dOrder)
+        result=self.cosh.cal(x,dOrder)
+        self.debugPrint(x,dorder,result)
+        return result
 class Sin(AD):
     def __init__(self,func):
         self.func=func
@@ -477,7 +516,9 @@ class Sin(AD):
                 mul=-mul*cosValue
             addList.append(mul)
             self.rdOL.incr()
-        return sum(addList)
+        result=sum(addList)
+        self.debugPrint(x,dorder,result)
+        return result
 class Sinh(AD):
     def __init__(self,func):
         self.func=func
@@ -491,7 +532,9 @@ class Sinh(AD):
             self.dependent=['ALL']
         self.sinh=-1j*Sin(func*1j)
     def cal(self,x,dOrder):
-        return self.sinh.cal(x,dOrder)
+        result=self.sinh.cal(x,dOrder)
+        self.debugPrint(x,dorder,result)
+        return result
 class Tan(AD):
     def __init__(self,func):
         self.func=func
@@ -505,7 +548,9 @@ class Tan(AD):
             self.dependent=['ALL']
         self.tan=Sin(func)/Cos(func)
     def cal(self,x,dOrder):
-        return self.tan.cal(x,dOrder)
+        result=self.tan.cal(x,dOrder)
+        self.debugPrint(x,dorder,result)
+        return result
 class Tanh(AD):
     def __init__(self,func):
         self.func=func
@@ -520,10 +565,11 @@ class Tanh(AD):
         self.tanh_negative=(1-Exp(-2.*func))/(1+Exp(-2.*func))
         self.tanh_positive=(Exp(2.*func)-1)/(Exp(2.*func)+1)
     def cal(self,x,dOrder):
-        temp_result=self.tanh_negative.cal(x,dOrder)
-        if not(float('-inf')<np.abs(temp_result)<float('inf')):
-            temp_result=self.tanh_positive.cal(x,dOrder)
-        return temp_result
+        result=self.tanh_negative.cal(x,dOrder)
+        if not(float('-inf')<np.abs(result)<float('inf')):
+            result=self.tanh_positive.cal(x,dOrder)
+        self.debugPrint(x,dorder,result)
+        return result
 '''
 #---------------Complex Functions-------------------------------#
 '''
@@ -539,7 +585,9 @@ class Conjugate(AD):
         except AttributeError:
             self.dependent=['ALL']
     def cal(self,x,dOrder):
-        return np.conjugate(self.func.cal(x,dOrder))
+        result=np.conjugate(self.func.cal(x,dOrder))
+        self.debugPrint(x,dorder,result)
+        return result
 class Real(AD):
     def __init__(self,func):
         self.func=func
@@ -552,7 +600,9 @@ class Real(AD):
         except AttributeError:
             self.dependent=['ALL']
     def cal(self,x,dOrder):
-        return self.func.cal(x,dOrder).real
+        result=self.func.cal(x,dOrder).real
+        self.debugPrint(x,dorder,result)
+        return result
 class Imaginary(AD):
     def __init__(self,func):
         self.func=func
@@ -565,7 +615,9 @@ class Imaginary(AD):
         except AttributeError:
             self.dependent=['ALL']
     def cal(self,x,dOrder):
-        return self.func.cal(x,dOrder).imag
+        result=self.func.cal(x,dOrder).imag
+        self.debugPrint(x,dorder,result)
+        return result
 class Absolute(AD):
     def __init__(self,func):
         self.func=func
@@ -579,8 +631,9 @@ class Absolute(AD):
         except AttributeError:
             self.dependent=['ALL']
     def cal(self,x,dOrder):
-        
-        return self.abs.cal(x,dOrder)
+        result=self.abs.cal(x,dOrder)
+        self.debugPrint(x,dorder,result)
+        return result
 '''
 #---------------Base End Functions-------------------------------#
 '''
@@ -592,9 +645,11 @@ class Constant(AD):
     def cal(self,x,dOrder):
         for var in dOrder:
             if dOrder[var]>0:
+                self.debugPrint(x,dorder,0.)
                 return 0.
                 break
         else:
+            self.debugPrint(x,dorder,self.const)
             return self.const
          
 class Scalar(AD):
@@ -607,14 +662,18 @@ class Scalar(AD):
             if dOrder[var]>0:
                 if var==self.name:
                     if dOrder[var]>1:
+                        self.debugPrint(x,dorder,0.)
                         return 0.
                     else:
                         returnX=False
                 else:
+                    self.debugPrint(x,dorder,0.)
                     return 0.
         if returnX:
+            self.debugPrint(x,dorder,x[self.name])
             return x[self.name]
         else:
+            self.debugPrint(x,dorder,1.)
             return 1. 
 '''
 #---------------Flexible Functions-----------------#
@@ -626,7 +685,9 @@ class Function(AD):
         self.dependent=dependent
     def cal(self,x,dOrder):
         args=self.args
-        return self.func(x,dOrder,*args)
+        result=self.func(x,dOrder,*args)
+        self.debugPrint(x,dorder,result)
+        return result
     def changeArgs(self,*new_args):
         self.args=new_args
         return;
