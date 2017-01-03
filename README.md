@@ -78,4 +78,7 @@ Turn off debuging (default)
 File 'autoD.py" represents the main and latest version. See inside file for version notes.
 
 ###note
-I tried Theano (http://deeplearning.net/software/theano/) but I have no idea why it is clogging up my system RAM (~7GB, which is almost all I have). This code is easy to edit and depends on only Numpy. If you need more functionallity (I do not know what else there is to automatic differentiation as I have not explored Theano fully), want to include more functions or any other issues, please leave your comments :) . I am using python3, so I do not know how well it works for python2. Thanks.
+This code is easy to edit and depends on only Numpy. If you need more functionallity (I do not know what else there is to automatic differentiation as I have not explored Theano fully), want to include more functions or any other issues, please leave your comments :) . I am using python3, so I do not know how well it works for python2. Thanks.
+If you have extra RAM to spare and using a smaller number of nodes, you can try out Theano (http://deeplearning.net/software/theano/). 
+
+The next objective is to add backward automatic differentiation to this module and enable compatible switch between backward and forward automatic differentiation for the user to choose their own flow map.
