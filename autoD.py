@@ -49,7 +49,6 @@ Flexible functions accepts user-defined function and turn them into callable obj
 '''
 
 import numpy as np
-print('autoD import')
 '''
 --------------------Main Class-----------------
 '''   
