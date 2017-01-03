@@ -17,7 +17,6 @@ History:
   Author: dwindz 19May2016           - v3.1
                                         -remove class creation inside class function to reduce runtime
                                         -Multiply and Addition now accepts floats as one of the object in list
-#####################Set as Main version########################
   Author: dwindz 03Jun2016           - v3.2
                                         -added complex conjugate, real and imaginary
                                         -added shortcut method __add__ etc
