@@ -64,6 +64,15 @@ x is the value of the variable you want to differentiate wrt.
 dOrder is the order of differentiation.
 You can change your args even after definine by calling fx.changeArgs(*new_args).
 
+###Debuging
+The switch can be controlled by assigning a function to *.debugSwitch. The input of the function must follow (x,dOrder,result).
+
+#####*.debugOn(name=debugName)
+Print out the values by switching on debug for individual object. The debugName with be printed out also.
+
+#####*debugOff()
+Turn off debuging (default)
+
 ###Past Versions
 File 'autoD.py" represents the main and latest version. See inside file for version notes.
 
