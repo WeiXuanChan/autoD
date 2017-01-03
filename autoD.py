@@ -54,8 +54,11 @@ print('autoD import')
 --------------------Main Class-----------------
 '''   
 class AD:
-    self.debugPrintout=False
-    self.debugName=''
+    def defaultDebugSwitch(x,dOrder,result):
+        return True
+    debugPrintout=False
+    debugName=''
+    debugSwitch=defaultDebugSwitch
     def __pow__(self, val):
         return Power(self,val)
     def __rpow__(self, val):
@@ -84,20 +87,21 @@ class AD:
         return Multiply([val,Power(self,-1)])
     def __neg__(self):
         return Multiply([-1.,self])
-    def debugOn(self,name=self.debugName):
+    def debugOn(self,name=debugName):
         self.debugPrintout=True
         self.debugName=name
         return;
     def debugOff(self):
         self.debugPrintout=False
         return;
-    def debugPrint(self,x,dorder,result):
-        if self.debugPrintout:
-            print(self.debugName,':')
-            print('    x=',x)
+    def debugPrint(self,x,dOrder,result):
+        if self.debugPrintout and self.debugSwitch(x,dOrder,result):
+            print(self.debugName,'@',x)
             print('    differential=',dOrder)
             print('    value=',result)
         return;
+    
+    
         
 '''
 #---------------Basic Functions-------------------------------#
@@ -121,9 +125,10 @@ class Differentiate(AD):
         if 'ALL' not in self.dependent:
             for var in new_dOrder:
                 if new_dOrder[var]>0 and (var not in self.dependent):
+                    self.debugPrint(x,dOrder,0.)
                     return 0.
         result=self.inputFunc.cal(x,new_dOrder)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
         
 class Addition(AD):
@@ -145,12 +150,13 @@ class Addition(AD):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
+                    self.debugPrint(x,dOrder,0.)
                     return 0.
         temp=[]
         for n in range(len(self.funcList)):
             temp.append(self.funcList[n].cal(x,dOrder))
         result=sum(temp)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
               
 class Multiply(AD):
@@ -175,6 +181,7 @@ class Multiply(AD):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
+                    self.debugPrint(x,dOrder,0.)
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         addList=[]
@@ -183,6 +190,7 @@ class Multiply(AD):
             mul=self.coef
             for n in range(len(self.funcList)):
                 mul=mul*self.funcList[n].cal(x,{})
+            self.debugPrint(x,dOrder,mul)
             return mul
         self.rdOL.reset(dOrderList)
         while not(self.rdOL.end):
@@ -200,7 +208,7 @@ class Multiply(AD):
             addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 
 class Power(AD):
@@ -229,16 +237,24 @@ class Power(AD):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
+                    self.debugPrint(x,dOrder,0.)
                     return 0.
         if self.pow==1:
-            return self.func.cal(x,dOrder)
+            result=self.func.cal(x,dOrder)
+            self.debugPrint(x,dOrder,result)
+            return result
         elif self.pow==0:
+            self.debugPrint(x,dOrder,1.)
             return 1.
         elif not(self.new_exp==None):
-            return self.new_exp.cal(x,dOrder)
+            result=self.new_exp.cal(x,dOrder)
+            self.debugPrint(x,dOrder,result)
+            return result
         dOrderList,keyList=splitdOrder(dOrder)
         if len(dOrderList)==0:
-            return self.func.cal(x,dOrder)**self.pow
+            result=self.func.cal(x,dOrder)**self.pow
+            self.debugPrint(x,dOrder,0.)
+            return result
         self.rdOL.reset(dOrderList)
         addList=[]
         pastCalculation={}
@@ -266,7 +282,7 @@ class Power(AD):
                 addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
     
 class Exp(AD):
@@ -285,10 +301,12 @@ class Exp(AD):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
+                    self.debugPrint(x,dOrder,0.)
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         exp_value=np.exp(self.func.cal(x,{}))
         if len(dOrderList)==0:
+            self.debugPrint(x,dOrder,exp_value)
             return exp_value
         self.rdOL.reset(dOrderList)
         addList=[]
@@ -309,8 +327,8 @@ class Exp(AD):
             addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)*exp_value
-        self.debugPrint(x,dorder,result)
-        return 
+        self.debugPrint(x,dOrder,result)
+        return result
         
 class Ln(AD):
     def __init__(self,func):
@@ -328,10 +346,13 @@ class Ln(AD):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
+                    self.debugPrint(x,dOrder,0.)
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         if len(dOrderList)==0:
-            return np.log(self.func.cal(x,{}))
+            result=np.log(self.func.cal(x,{}))
+            self.debugPrint(x,dOrder,result)
+            return result
         self.rdOL.reset(dOrderList)
         addList=[]
         pastCalculation={}
@@ -358,7 +379,7 @@ class Ln(AD):
             addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
         
 class Log(AD):
@@ -386,9 +407,10 @@ class Log(AD):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
+                    self.debugPrint(x,dOrder,0.)
                     return 0.
         result=self.coef*self.new_ln.cal(x,dOrder)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
             
 class Cos(AD):
@@ -407,10 +429,12 @@ class Cos(AD):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
+                    self.debugPrint(x,dOrder,0.)
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         cosValue=np.cos(self.func.cal(x,{}))
         if len(dOrderList)==0:
+            self.debugPrint(x,dOrder,cosValue)
             return cosValue
         self.rdOL.reset(dOrderList)
         addList=[]
@@ -445,7 +469,7 @@ class Cos(AD):
             addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 class Cosh(AD):
     def __init__(self,func):
@@ -461,7 +485,7 @@ class Cosh(AD):
         self.cosh=Cos(func*1j)
     def cal(self,x,dOrder):
         result=self.cosh.cal(x,dOrder)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 class Sin(AD):
     def __init__(self,func):
@@ -479,10 +503,12 @@ class Sin(AD):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
+                    self.debugPrint(x,dOrder,0.)
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         sinValue=np.sin(self.func.cal(x,{}))
         if len(dOrderList)==0:
+            self.debugPrint(x,dOrder,sinValue)
             return sinValue
         self.rdOL.reset(dOrderList)
         addList=[]
@@ -517,7 +543,7 @@ class Sin(AD):
             addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 class Sinh(AD):
     def __init__(self,func):
@@ -533,7 +559,7 @@ class Sinh(AD):
         self.sinh=-1j*Sin(func*1j)
     def cal(self,x,dOrder):
         result=self.sinh.cal(x,dOrder)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 class Tan(AD):
     def __init__(self,func):
@@ -549,7 +575,7 @@ class Tan(AD):
         self.tan=Sin(func)/Cos(func)
     def cal(self,x,dOrder):
         result=self.tan.cal(x,dOrder)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 class Tanh(AD):
     def __init__(self,func):
@@ -568,7 +594,7 @@ class Tanh(AD):
         result=self.tanh_negative.cal(x,dOrder)
         if not(float('-inf')<np.abs(result)<float('inf')):
             result=self.tanh_positive.cal(x,dOrder)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 '''
 #---------------Complex Functions-------------------------------#
@@ -586,7 +612,7 @@ class Conjugate(AD):
             self.dependent=['ALL']
     def cal(self,x,dOrder):
         result=np.conjugate(self.func.cal(x,dOrder))
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 class Real(AD):
     def __init__(self,func):
@@ -601,7 +627,7 @@ class Real(AD):
             self.dependent=['ALL']
     def cal(self,x,dOrder):
         result=self.func.cal(x,dOrder).real
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 class Imaginary(AD):
     def __init__(self,func):
@@ -616,7 +642,7 @@ class Imaginary(AD):
             self.dependent=['ALL']
     def cal(self,x,dOrder):
         result=self.func.cal(x,dOrder).imag
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 class Absolute(AD):
     def __init__(self,func):
@@ -632,7 +658,7 @@ class Absolute(AD):
             self.dependent=['ALL']
     def cal(self,x,dOrder):
         result=self.abs.cal(x,dOrder)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
 '''
 #---------------Base End Functions-------------------------------#
@@ -645,11 +671,11 @@ class Constant(AD):
     def cal(self,x,dOrder):
         for var in dOrder:
             if dOrder[var]>0:
-                self.debugPrint(x,dorder,0.)
+                self.debugPrint(x,dOrder,0.)
                 return 0.
                 break
         else:
-            self.debugPrint(x,dorder,self.const)
+            self.debugPrint(x,dOrder,self.const)
             return self.const
          
 class Scalar(AD):
@@ -662,18 +688,18 @@ class Scalar(AD):
             if dOrder[var]>0:
                 if var==self.name:
                     if dOrder[var]>1:
-                        self.debugPrint(x,dorder,0.)
+                        self.debugPrint(x,dOrder,0.)
                         return 0.
                     else:
                         returnX=False
                 else:
-                    self.debugPrint(x,dorder,0.)
+                    self.debugPrint(x,dOrder,0.)
                     return 0.
         if returnX:
-            self.debugPrint(x,dorder,x[self.name])
+            self.debugPrint(x,dOrder,x[self.name])
             return x[self.name]
         else:
-            self.debugPrint(x,dorder,1.)
+            self.debugPrint(x,dOrder,1.)
             return 1. 
 '''
 #---------------Flexible Functions-----------------#
@@ -686,7 +712,7 @@ class Function(AD):
     def cal(self,x,dOrder):
         args=self.args
         result=self.func(x,dOrder,*args)
-        self.debugPrint(x,dorder,result)
+        self.debugPrint(x,dOrder,result)
         return result
     def changeArgs(self,*new_args):
         self.args=new_args
