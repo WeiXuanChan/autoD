@@ -1,6 +1,6 @@
 '''
 File: autoD.py
-Description: Forward automatic differentiation version3.5.0
+Description: Forward automatic differentiation version3.5.1
 History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
@@ -17,6 +17,7 @@ History:
   Author: dwindz 19May2016           - v3.1
                                         -remove class creation inside class function to reduce runtime
                                         -Multiply and Addition now accepts floats as one of the object in list
+#####################Set as Main version########################
   Author: dwindz 03Jun2016           - v3.2
                                         -added complex conjugate, real and imaginary
                                         -added shortcut method __add__ etc
@@ -26,6 +27,9 @@ History:
                                         -added hyperbolic trigo functions
   Author: dwindz 03Jan2017           - v3.5
                                         -added debug print out
+  Author: dwindz 04Jan2017           - v3.5.1
+                                        -overwrite __new__ to return number when input is not AD object
+                                        -move debug control to the main module functions
                                        
 
 '''
@@ -48,15 +52,16 @@ Flexible functions accepts user-defined function and turn them into callable obj
 '''
 
 import numpy as np
+print('autoD version 3.5.1')
 '''
 --------------------Main Class-----------------
-'''   
+'''
 class AD:
     def defaultDebugSwitch(x,dOrder,result):
         return True
     debugPrintout=False
     debugName=''
-    debugSwitch=defaultDebugSwitch
+    debugSwitchFunc=defaultDebugSwitch
     def __pow__(self, val):
         return Power(self,val)
     def __rpow__(self, val):
@@ -85,20 +90,12 @@ class AD:
         return Multiply([val,Power(self,-1)])
     def __neg__(self):
         return Multiply([-1.,self])
-    def debugOn(self,name=debugName):
-        self.debugPrintout=True
-        self.debugName=name
-        return;
-    def debugOff(self):
-        self.debugPrintout=False
-        return;
     def debugPrint(self,x,dOrder,result):
-        if self.debugPrintout and self.debugSwitch(x,dOrder,result):
+        if self.debugPrintout and self.debugSwitchFunc(x,dOrder,result):
             print(self.debugName,'@',x)
             print('    differential=',dOrder)
             print('    value=',result)
         return;
-    
     
         
 '''
@@ -106,6 +103,14 @@ class AD:
 '''
 
 class Differentiate(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+            if bool(kwargs):
+                for order in kwargs.values:
+                    if order>0:
+                        return 0.
+            return args[0]
+        return super().__new__(cls)
     def __init__(self,func,order):
         self.inputFunc=func
         self.inputorder=order
@@ -130,6 +135,11 @@ class Differentiate(AD):
         return result
         
 class Addition(AD):
+    def __new__(cls, *args, **kwargs):
+        for func in args[0]:
+            if not(isinstance(func, (int, float,complex))):
+                return super().__new__(cls)
+        return sum(args[0])
     def __init__(self,funcList):
         self.funcList=funcList
         for n in range(len(self.funcList)):
@@ -158,6 +168,14 @@ class Addition(AD):
         return result
               
 class Multiply(AD):
+    def __new__(cls, *args, **kwargs):
+        for func in args[0]:
+            if not(isinstance(func, (int, float,complex))):
+                return super().__new__(cls)
+        mul=1.
+        for func in args[0]:
+            mul*=func
+        return mul
     def __init__(self,funcList):
         self.funcList=[]
         self.coef=1.
@@ -210,6 +228,10 @@ class Multiply(AD):
         return result
 
 class Power(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)) and isinstance(args[1], (int, float,complex)):
+                return args[0]**args[1]
+        return super().__new__(cls)
     def __init__(self,func,pow):
         if isinstance(func, (int, float,complex)):
             self.func=Constant(func)
@@ -284,6 +306,10 @@ class Power(AD):
         return result
     
 class Exp(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return np.exp(args[0])
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -329,6 +355,10 @@ class Exp(AD):
         return result
         
 class Ln(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return np.log(args[0])
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -381,6 +411,10 @@ class Ln(AD):
         return result
         
 class Log(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)) and isinstance(args[1], (int, float,complex)):
+                return np.log(args[0])/np.log(args[1])
+        return super().__new__(cls)
     def __init__(self,func,base):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -412,6 +446,10 @@ class Log(AD):
         return result
             
 class Cos(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return np.cos(args[0])
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -470,6 +508,10 @@ class Cos(AD):
         self.debugPrint(x,dOrder,result)
         return result
 class Cosh(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return np.cosh(args[0])
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -486,6 +528,10 @@ class Cosh(AD):
         self.debugPrint(x,dOrder,result)
         return result
 class Sin(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return np.sin(args[0])
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -544,6 +590,10 @@ class Sin(AD):
         self.debugPrint(x,dOrder,result)
         return result
 class Sinh(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return np.sinh(args[0])
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -560,6 +610,10 @@ class Sinh(AD):
         self.debugPrint(x,dOrder,result)
         return result
 class Tan(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return np.tan(args[0])
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -576,6 +630,10 @@ class Tan(AD):
         self.debugPrint(x,dOrder,result)
         return result
 class Tanh(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return np.tanh(args[0])
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -598,6 +656,10 @@ class Tanh(AD):
 #---------------Complex Functions-------------------------------#
 '''
 class Conjugate(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return np.conjugate(args[0])
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -613,6 +675,10 @@ class Conjugate(AD):
         self.debugPrint(x,dOrder,result)
         return result
 class Real(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return args[0].real
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -628,6 +694,10 @@ class Real(AD):
         self.debugPrint(x,dOrder,result)
         return result
 class Imaginary(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return args[0].imag
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -643,6 +713,10 @@ class Imaginary(AD):
         self.debugPrint(x,dOrder,result)
         return result
 class Absolute(AD):
+    def __new__(cls, *args, **kwargs):
+        if isinstance(args[0], (int, float,complex)):
+                return np.absolute(args[0])
+        return super().__new__(cls)
     def __init__(self,func):
         self.func=func
         if isinstance(func, (int, float,complex)):
@@ -810,3 +884,20 @@ class rotatingdOrderListPower:
             arrangeList[self.rotatingList[n]].append(self.dOrderList[n])
         return arrangeList
                 
+'''
+-------------------- Debug functions -----------------
+'''
+def debugSwitch(adObject,func):
+    if not(isinstance(adObject, (int, float,complex))):
+        adObject.debugSwitchFunc=func
+    return;    
+def debugOn(adObject,name=''):
+    if not(isinstance(adObject, (int, float,complex))):
+        adObject.debugPrintout=True
+        if name!='':
+            adObject.debugName=name
+    return;
+def debugOff(adObject):
+    if not(isinstance(adObject, (int, float,complex))):
+        adObject.debugPrintout=False
+    return;
