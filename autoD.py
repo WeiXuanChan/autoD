@@ -57,7 +57,7 @@ print('autoD version 3.5.1')
 --------------------Main Class-----------------
 '''
 class AD:
-    def defaultDebugSwitch(x,dOrder,result):
+    def defaultDebugSwitch(self,x,dOrder,result):
         return True
     debugPrintout=False
     debugName=''
@@ -273,7 +273,7 @@ class Power(AD):
         dOrderList,keyList=splitdOrder(dOrder)
         if len(dOrderList)==0:
             result=self.func.cal(x,dOrder)**self.pow
-            self.debugPrint(x,dOrder,0.)
+            self.debugPrint(x,dOrder,result)
             return result
         self.rdOL.reset(dOrderList)
         addList=[]
