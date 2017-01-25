@@ -39,15 +39,15 @@ History:
 '''
 Standardized class def: 
 func            class object      class object must contain the following function
-                                    def cal(self,x,dOrder):
+                                    def __call__(self,x,dOrder):
                                         x        dict[identifier]=float
                                         dOrder   dict[identifier]=int
-                                        return float results or call to other class object .cal function
+                                        return float results or call to other class object __call__ function
 
 Note:
 I divided the Class into three types; basic functions, base-end functions and flexible functions.
-Basic functions contain class objects that deals with differentiating operations
-Base end functions returns the result for any order of differentiation without call to other functions.
+Basic functions contain class objects that deals with differentiating operations.
+Base end functions returns the result for any order of differentiation without call to other functions (seed).
 Flexible functions accepts user-defined function and turn them into callable objects "func" in this module.
 
 
