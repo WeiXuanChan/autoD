@@ -1,6 +1,6 @@
 '''
 File: autoD.py
-Description: Forward automatic differentiation version3.5.1
+Description: Forward automatic differentiation version3.6.0
 History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
@@ -30,7 +30,9 @@ History:
   Author: dwindz 04Jan2017           - v3.5.1
                                         -overwrite __new__ to return number when input is not AD object
                                         -move debug control to the main module functions
-                                       
+  Author: dwindz 17Jan2017           - v3.6.0
+                                        -change all object to callable __call__ instead of using .cal()
+                                                          
 
 '''
 
@@ -52,7 +54,7 @@ Flexible functions accepts user-defined function and turn them into callable obj
 '''
 
 import numpy as np
-print('autoD version 3.5.1')
+print('autoD version 3.6.0')
 '''
 --------------------Main Class-----------------
 '''
@@ -118,7 +120,7 @@ class Differentiate(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         new_dOrder=dOrder.copy()
         for var in self.inputorder:
             if var in dOrder:
@@ -130,7 +132,7 @@ class Differentiate(AD):
                 if new_dOrder[var]>0 and (var not in self.dependent):
                     self.debugPrint(x,dOrder,0.)
                     return 0.
-        result=self.inputFunc.cal(x,new_dOrder)
+        result=self.inputFunc(x,new_dOrder)
         self.debugPrint(x,dOrder,result)
         return result
         
@@ -154,7 +156,7 @@ class Addition(AD):
             except AttributeError:
                 self.dependent=['ALL']
             
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -162,7 +164,7 @@ class Addition(AD):
                     return 0.
         temp=[]
         for n in range(len(self.funcList)):
-            temp.append(self.funcList[n].cal(x,dOrder))
+            temp.append(self.funcList[n](x,dOrder))
         result=sum(temp)
         self.debugPrint(x,dOrder,result)
         return result
@@ -193,7 +195,7 @@ class Multiply(AD):
             except AttributeError:
                 self.dependent=['ALL']
         self.rdOL=rotatingdOrderList(len(self.funcList))
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -205,7 +207,7 @@ class Multiply(AD):
         if len(dOrderList)==0:
             mul=self.coef
             for n in range(len(self.funcList)):
-                mul=mul*self.funcList[n].cal(x,{})
+                mul=mul*self.funcList[n](x,{})
             self.debugPrint(x,dOrder,mul)
             return mul
         self.rdOL.reset(dOrderList)
@@ -218,7 +220,7 @@ class Multiply(AD):
                     mul=mul*pastCalculation[pastCalculationKey]
                 else:
                     temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
-                    temp_value=self.funcList[n].cal(x,temp_dOrder)
+                    temp_value=self.funcList[n](x,temp_dOrder)
                     pastCalculation[pastCalculationKey]=temp_value
                     mul=mul*temp_value
             addList.append(mul)
@@ -253,26 +255,26 @@ class Power(AD):
         else:
             self.new_exp=None
         self.rdOL=rotatingdOrderListPower()
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
                     self.debugPrint(x,dOrder,0.)
                     return 0.
         if self.pow==1:
-            result=self.func.cal(x,dOrder)
+            result=self.func(x,dOrder)
             self.debugPrint(x,dOrder,result)
             return result
         elif self.pow==0:
             self.debugPrint(x,dOrder,1.)
             return 1.
         elif not(self.new_exp==None):
-            result=self.new_exp.cal(x,dOrder)
+            result=self.new_exp(x,dOrder)
             self.debugPrint(x,dOrder,result)
             return result
         dOrderList,keyList=splitdOrder(dOrder)
         if len(dOrderList)==0:
-            result=self.func.cal(x,dOrder)**self.pow
+            result=self.func(x,dOrder)**self.pow
             self.debugPrint(x,dOrder,result)
             return result
         self.rdOL.reset(dOrderList)
@@ -288,7 +290,7 @@ class Power(AD):
                     count+=1
             if mul!=0:
                 if (self.pow-count)!=0:
-                    mul=mul*self.func.cal(x,{})**(self.pow-count)
+                    mul=mul*self.func(x,{})**(self.pow-count)
                 for n in range(len(temp_dOrderList)):
                     if len(temp_dOrderList[n])!=0:
                         pastCalculationKey=''.join(map(str, temp_dOrderList[n]))
@@ -296,7 +298,7 @@ class Power(AD):
                             mul=mul*pastCalculation[pastCalculationKey]
                         else:
                             temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
-                            temp_value=self.func.cal(x,temp_dOrder)
+                            temp_value=self.func(x,temp_dOrder)
                             pastCalculation[pastCalculationKey]=temp_value
                             mul=mul*temp_value
                 addList.append(mul)
@@ -321,14 +323,14 @@ class Exp(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
                     self.debugPrint(x,dOrder,0.)
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
-        exp_value=np.exp(self.func.cal(x,{}))
+        exp_value=np.exp(self.func(x,{}))
         if len(dOrderList)==0:
             self.debugPrint(x,dOrder,exp_value)
             return exp_value
@@ -345,7 +347,7 @@ class Exp(AD):
                         mul=mul*pastCalculation[pastCalculationKey]
                     else:
                         temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
-                        temp_value=self.func.cal(x,temp_dOrder)
+                        temp_value=self.func(x,temp_dOrder)
                         pastCalculation[pastCalculationKey]=temp_value
                         mul=mul*temp_value
             addList.append(mul)
@@ -370,7 +372,7 @@ class Ln(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -378,7 +380,7 @@ class Ln(AD):
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
         if len(dOrderList)==0:
-            result=np.log(self.func.cal(x,{}))
+            result=np.log(self.func(x,{}))
             self.debugPrint(x,dOrder,result)
             return result
         self.rdOL.reset(dOrderList)
@@ -393,7 +395,7 @@ class Ln(AD):
                     if count!=0:
                         mul=mul*count
                     count-=1
-            mul=mul*self.func.cal(x,{})**count
+            mul=mul*self.func(x,{})**count
             for n in range(len(temp_dOrderList)):
                 if len(temp_dOrderList[n])!=0:
                     pastCalculationKey=''.join(map(str,temp_dOrderList[n]))
@@ -401,7 +403,7 @@ class Ln(AD):
                         mul=mul*pastCalculation[pastCalculationKey]
                     else:
                         temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
-                        temp_value=self.func.cal(x,temp_dOrder)
+                        temp_value=self.func(x,temp_dOrder)
                         pastCalculation[pastCalculationKey]=temp_value
                         mul=mul*temp_value
             addList.append(mul)
@@ -435,13 +437,13 @@ class Log(AD):
         else:
             self.new_ln=Ln(self.func)
             self.coef=-1./np.log(self.base)
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
                     self.debugPrint(x,dOrder,0.)
                     return 0.
-        result=self.coef*self.new_ln.cal(x,dOrder)
+        result=self.coef*self.new_ln(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
             
@@ -461,21 +463,21 @@ class Cos(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
                     self.debugPrint(x,dOrder,0.)
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
-        cosValue=np.cos(self.func.cal(x,{}))
+        cosValue=np.cos(self.func(x,{}))
         if len(dOrderList)==0:
             self.debugPrint(x,dOrder,cosValue)
             return cosValue
         self.rdOL.reset(dOrderList)
         addList=[]
         pastCalculation={}
-        sinValue=np.sin(self.func.cal(x,{}))
+        sinValue=np.sin(self.func(x,{}))
         while not(self.rdOL.end):
             mul=1.
             temp_dOrderList=self.rdOL.get()
@@ -490,7 +492,7 @@ class Cos(AD):
                         mul=mul*pastCalculation[pastCalculationKey]
                     else:
                         temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
-                        temp_value=self.func.cal(x,temp_dOrder)
+                        temp_value=self.func(x,temp_dOrder)
                         pastCalculation[pastCalculationKey]=temp_value
                         mul=mul*temp_value
             temp=count%4
@@ -523,8 +525,8 @@ class Cosh(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.cosh=Cos(func*1j)
-    def cal(self,x,dOrder):
-        result=self.cosh.cal(x,dOrder)
+    def __call__(self,x,dOrder):
+        result=self.cosh(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
 class Sin(AD):
@@ -543,21 +545,21 @@ class Sin(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
                     self.debugPrint(x,dOrder,0.)
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
-        sinValue=np.sin(self.func.cal(x,{}))
+        sinValue=np.sin(self.func(x,{}))
         if len(dOrderList)==0:
             self.debugPrint(x,dOrder,sinValue)
             return sinValue
         self.rdOL.reset(dOrderList)
         addList=[]
         pastCalculation={}
-        cosValue=np.cos(self.func.cal(x,{}))
+        cosValue=np.cos(self.func(x,{}))
         while not(self.rdOL.end):
             mul=1.
             temp_dOrderList=self.rdOL.get()
@@ -572,7 +574,7 @@ class Sin(AD):
                         mul=mul*pastCalculation[pastCalculationKey]
                     else:
                         temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
-                        temp_value=self.func.cal(x,temp_dOrder)
+                        temp_value=self.func(x,temp_dOrder)
                         pastCalculation[pastCalculationKey]=temp_value
                         mul=mul*temp_value
             temp=count%4
@@ -605,8 +607,8 @@ class Sinh(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.sinh=-1j*Sin(func*1j)
-    def cal(self,x,dOrder):
-        result=self.sinh.cal(x,dOrder)
+    def __call__(self,x,dOrder):
+        result=self.sinh(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
 class Tan(AD):
@@ -625,8 +627,8 @@ class Tan(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.tan=Sin(func)/Cos(func)
-    def cal(self,x,dOrder):
-        result=self.tan.cal(x,dOrder)
+    def __call__(self,x,dOrder):
+        result=self.tan(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
 class Tanh(AD):
@@ -646,10 +648,10 @@ class Tanh(AD):
             self.dependent=['ALL']
         self.tanh_negative=(1-Exp(-2.*func))/(1+Exp(-2.*func))
         self.tanh_positive=(Exp(2.*func)-1)/(Exp(2.*func)+1)
-    def cal(self,x,dOrder):
-        result=self.tanh_negative.cal(x,dOrder)
+    def __call__(self,x,dOrder):
+        result=self.tanh_negative(x,dOrder)
         if not(float('-inf')<np.abs(result)<float('inf')):
-            result=self.tanh_positive.cal(x,dOrder)
+            result=self.tanh_positive(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
 '''
@@ -670,8 +672,8 @@ class Conjugate(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def cal(self,x,dOrder):
-        result=np.conjugate(self.func.cal(x,dOrder))
+    def __call__(self,x,dOrder):
+        result=np.conjugate(self.func(x,dOrder))
         self.debugPrint(x,dOrder,result)
         return result
 class Real(AD):
@@ -689,8 +691,8 @@ class Real(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def cal(self,x,dOrder):
-        result=self.func.cal(x,dOrder).real
+    def __call__(self,x,dOrder):
+        result=self.func(x,dOrder).real
         self.debugPrint(x,dOrder,result)
         return result
 class Imaginary(AD):
@@ -708,8 +710,8 @@ class Imaginary(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def cal(self,x,dOrder):
-        result=self.func.cal(x,dOrder).imag
+    def __call__(self,x,dOrder):
+        result=self.func(x,dOrder).imag
         self.debugPrint(x,dOrder,result)
         return result
 class Absolute(AD):
@@ -728,8 +730,8 @@ class Absolute(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def cal(self,x,dOrder):
-        result=self.abs.cal(x,dOrder)
+    def __call__(self,x,dOrder):
+        result=self.abs(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
 '''
@@ -740,7 +742,7 @@ class Constant(AD):
     def __init__(self,const):
         self.const=const
         self.dependent=[]
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         for var in dOrder:
             if dOrder[var]>0:
                 self.debugPrint(x,dOrder,0.)
@@ -754,7 +756,7 @@ class Scalar(AD):
     def __init__(self,name):
         self.name=name
         self.dependent=[name]
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         returnX=True
         for var in dOrder:
             if dOrder[var]>0:
@@ -781,7 +783,7 @@ class Function(AD):
         self.func=func
         self.args=args
         self.dependent=dependent
-    def cal(self,x,dOrder):
+    def __call__(self,x,dOrder):
         args=self.args
         result=self.func(x,dOrder,*args)
         self.debugPrint(x,dOrder,result)
