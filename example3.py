@@ -1,6 +1,6 @@
 '''
 File: example3.py
-Description: Example of importing self-defining function into autoD
+Description: Example
                     calculate d/dxdy^2[x^2 ln(y)]
 History:
     Date    Programmer SAR# - Description
