@@ -15,4 +15,4 @@ x=ad.Scalar('x')
 a=2.*ad.Cos(x**2.)
 b=ad.Differentiate(ad.Sin(ad.Ln(x)),1)
 fx=a-b
-print(fx.cal({'x':0.2},{'x':1}))
+print(fx({'x':0.2},{'x':1}))
