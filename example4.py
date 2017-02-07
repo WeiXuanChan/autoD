@@ -42,6 +42,6 @@ matrix=np.zeros((steps+1,steps+1))
 
 #the first and last row is remove to add in boundary equation
 for n in range(1,steps):
-    matrix[n,:]=func.cal({'x':x[n]},{})
+    matrix[n,:]=func({'x':x[n]},{})
 
 print(matrix)
