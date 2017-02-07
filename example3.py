@@ -18,5 +18,5 @@ y=ad.Scalar('y')
 a=x**2.*ad.Ln(y)
 
 inputPoint={'x':0.2,'y':2.2}
-print(a.cal(inputPoint,{'x':1,'y':2}))
+print(a(inputPoint,{'x':1,'y':2}))
 print(-2.*inputPoint['x']/inputPoint['y']/inputPoint['y'])
