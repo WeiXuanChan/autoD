@@ -28,6 +28,6 @@ x=ad.Scalar('x')
 a=x**2.
 integral=ad.Function(func,x,0.)
 b=ad.Ln(integral)
-print(b.cal({'x':0.2},{'x':1}))
+print(b({'x':0.2},{'x':1}))
 integral.changeArgs(a,0.)
-print(b.cal({'x':0.2},{'x':1}))
+print(b({'x':0.2},{'x':1}))
