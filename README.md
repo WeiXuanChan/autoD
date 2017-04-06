@@ -65,13 +65,13 @@ dOrder is the order of differentiation.
 You can change your args even after definine by calling fx.changeArgs(*new_args).
 
 ###Debuging
-#####*.debugSwitch
+#####debugSwitch(adObject,func)
 The switch can be controlled by assigning a function to the variable *.debugSwitch. The input of the function must follow (x,dOrder,result).
 
-#####*.debugOn(name=debugName)
+#####debugOn(adObject,name=debugName)
 Print out the values by switching on debug for individual object. The debugName with be printed out also.
 
-#####*debugOff()
+#####debugOff(adObject)
 Turn off debuging (default)
 
 ###Past Versions
