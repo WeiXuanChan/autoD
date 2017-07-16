@@ -32,7 +32,9 @@ History:
                                         -move debug control to the main module functions
   Author: dwindz 17Jan2017           - v3.6.0
                                         -change all object to callable __call__ instead of using .cal()
-                                                          
+  Author: dwindz 16Jul2017           - v3.6.1
+                                        -debug Power class with power=0 (error in differentiating x^0 wrt x)
+                                        -added self print to indicate dependent variables
 
 '''
 
@@ -54,7 +56,7 @@ Flexible functions accepts user-defined function and turn them into callable obj
 '''
 
 import numpy as np
-print('autoD version 3.6.0')
+print('autoD version 3.6.1')
 '''
 --------------------Main Class-----------------
 '''
@@ -92,6 +94,14 @@ class AD:
         return Multiply([val,Power(self,-1)])
     def __neg__(self):
         return Multiply([-1.,self])
+    def __str__(self):
+        try:
+            if 'ALL' in self.dependent:
+                return 'autoD function'
+        except NameError:
+            return 'autoD function'
+        strOut=','.join(self.dependent)
+        return 'autoD function('+strOut+')'
     def debugPrint(self,x,dOrder,result):
         if self.debugPrintout and self.debugSwitchFunc(x,dOrder,result):
             print(self.debugName,'@',x)
@@ -266,8 +276,9 @@ class Power(AD):
             self.debugPrint(x,dOrder,result)
             return result
         elif self.pow==0:
-            self.debugPrint(x,dOrder,1.)
-            return 1.
+            result=Constant(1.)(x,dOrder)
+            self.debugPrint(x,dOrder,result)
+            return result
         elif not(self.new_exp==None):
             result=self.new_exp(x,dOrder)
             self.debugPrint(x,dOrder,result)
