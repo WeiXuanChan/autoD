@@ -35,6 +35,9 @@ History:
   Author: dwindz 16Jul2017           - v3.6.1
                                         -debug Power class with power=0 (error in differentiating x^0 wrt x)
                                         -added self print to indicate dependent variables
+  Author: dwindz 16Jul2017           - v3.7.0
+                                        -clean up __new__ for pickle
+                                        -swap is instance(float,int,...) to not(isinstance(AD))
 
 '''
 
@@ -56,7 +59,7 @@ Flexible functions accepts user-defined function and turn them into callable obj
 '''
 
 import numpy as np
-print('autoD version 3.6.1')
+print('autoD version 3.7.0')
 '''
 --------------------Main Class-----------------
 '''
@@ -116,12 +119,13 @@ class AD:
 
 class Differentiate(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-            if bool(kwargs):
-                for order in kwargs.values:
-                    if order>0:
-                        return 0.
-            return args[0]
+        if args:
+            if not(isinstance(args[0], AD)):
+                if bool(kwargs):
+                    for order in kwargs.values:
+                        if order>0:
+                            return 0.
+                return args[0]
         return super().__new__(cls)
     def __init__(self,func,order):
         self.inputFunc=func
@@ -148,14 +152,17 @@ class Differentiate(AD):
         
 class Addition(AD):
     def __new__(cls, *args, **kwargs):
-        for func in args[0]:
-            if not(isinstance(func, (int, float,complex))):
-                return super().__new__(cls)
+        if args:
+            for func in args[0]:
+                if isinstance(func, AD):
+                    return super().__new__(cls)
+        else:
+            return super().__new__(cls)
         return sum(args[0])
     def __init__(self,funcList):
         self.funcList=funcList
         for n in range(len(self.funcList)):
-            if isinstance(self.funcList[n], (int, float,complex)):
+            if not(isinstance(self.funcList[n], AD)):
                 self.funcList[n]=Constant(self.funcList[n])
         self.dependent=[]
         for func in self.funcList:
@@ -181,19 +188,22 @@ class Addition(AD):
               
 class Multiply(AD):
     def __new__(cls, *args, **kwargs):
-        for func in args[0]:
-            if not(isinstance(func, (int, float,complex))):
-                return super().__new__(cls)
-        mul=1.
-        for func in args[0]:
-            mul*=func
+        if args:
+            for func in args[0]:
+                if isinstance(func, AD):
+                    return super().__new__(cls)
+            mul=1.
+            for func in args[0]:
+                mul*=func
+        else:
+            return super().__new__(cls)
         return mul
     def __init__(self,funcList):
         self.funcList=[]
         self.coef=1.
         self.dependent=[]
         for func in funcList:
-            if not(isinstance(func, (int, float,complex))):
+            if isinstance(func, AD):
                 self.funcList.append(func)
             else:
                 self.coef=self.coef*func
@@ -241,20 +251,21 @@ class Multiply(AD):
 
 class Power(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)) and isinstance(args[1], (int, float,complex)):
-                return args[0]**args[1]
+        if args:
+            if not(isinstance(args[0], AD)) and not(isinstance(args[1], AD)):
+                    return args[0]**args[1]
         return super().__new__(cls)
     def __init__(self,func,pow):
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         self.pow=pow 
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-        if not(isinstance(self.pow, (int, float,complex))):
+        if isinstance(self.pow, AD):
             self.new_exp=Exp(Multiply([Ln(self.func),self.pow]))
             try:
                 for dependent in pow.dependent:
@@ -320,15 +331,16 @@ class Power(AD):
     
 class Exp(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return np.exp(args[0])
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return np.exp(args[0])
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -369,15 +381,16 @@ class Exp(AD):
         
 class Ln(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return np.log(args[0])
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return np.log(args[0])
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -425,15 +438,16 @@ class Ln(AD):
         
 class Log(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)) and isinstance(args[1], (int, float,complex)):
-                return np.log(args[0])/np.log(args[1])
+        if args:
+            if not(isinstance(args[0], AD)) and not(isinstance(args[1], AD)):
+                    return np.log(args[0])/np.log(args[1])
         return super().__new__(cls)
     def __init__(self,func,base):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         self.base=base
         try:
             self.dependent=func.dependent[:]
@@ -460,15 +474,16 @@ class Log(AD):
             
 class Cos(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return np.cos(args[0])
+        if args:
+            if isinstance(args[0], (int, float,complex)):
+                    return np.cos(args[0])
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -522,15 +537,16 @@ class Cos(AD):
         return result
 class Cosh(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return np.cosh(args[0])
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return np.cosh(args[0])
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -542,15 +558,16 @@ class Cosh(AD):
         return result
 class Sin(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return np.sin(args[0])
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return np.sin(args[0])
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -604,15 +621,16 @@ class Sin(AD):
         return result
 class Sinh(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return np.sinh(args[0])
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return np.sinh(args[0])
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -624,15 +642,16 @@ class Sinh(AD):
         return result
 class Tan(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return np.tan(args[0])
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return np.tan(args[0])
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -644,15 +663,16 @@ class Tan(AD):
         return result
 class Tanh(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return np.tanh(args[0])
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return np.tanh(args[0])
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -670,15 +690,16 @@ class Tanh(AD):
 '''
 class Conjugate(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return np.conjugate(args[0])
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return np.conjugate(args[0])
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -689,15 +710,16 @@ class Conjugate(AD):
         return result
 class Real(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return args[0].real
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return args[0].real
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -708,15 +730,16 @@ class Real(AD):
         return result
 class Imaginary(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return args[0].imag
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return args[0].imag
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         try:
             self.dependent=func.dependent[:]
         except AttributeError:
@@ -727,15 +750,16 @@ class Imaginary(AD):
         return result
 class Absolute(AD):
     def __new__(cls, *args, **kwargs):
-        if isinstance(args[0], (int, float,complex)):
-                return np.absolute(args[0])
+        if args:
+            if not(isinstance(args[0], AD)):
+                    return np.absolute(args[0])
         return super().__new__(cls)
     def __init__(self,func):
         self.func=func
-        if isinstance(func, (int, float,complex)):
-            self.func=Constant(func)
-        else:
+        if isinstance(func, AD):
             self.func=func
+        else:
+            self.func=Constant(func)
         self.abs=(Real(self.func)**2.+Imaginary(self.func)**2.)**0.5
         try:
             self.dependent=func.dependent[:]
@@ -901,16 +925,16 @@ class rotatingdOrderListPower:
 -------------------- Debug functions -----------------
 '''
 def debugSwitch(adObject,func):
-    if not(isinstance(adObject, (int, float,complex))):
+    if isinstance(adObject, AD):
         adObject.debugSwitchFunc=func
     return;    
 def debugOn(adObject,name=''):
-    if not(isinstance(adObject, (int, float,complex))):
+    if isinstance(adObject, AD):
         adObject.debugPrintout=True
         if name!='':
             adObject.debugName=name
     return;
 def debugOff(adObject):
-    if not(isinstance(adObject, (int, float,complex))):
+    if isinstance(adObject, AD):
         adObject.debugPrintout=False
     return;
