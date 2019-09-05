@@ -1,7 +1,7 @@
 # autoD
 autoD is a lightweight, flexible automatic differentiation for python3 based on numpy. It enable user to convert your user-defined functions into differentiatable object. Thus, it will be able to do integration and matrix filling for you (see examples). To calculate the differential, call the autoD object with "(x,dOrder)" of any class in this module, where 'x' is the value of independent scalars and 'dOrder' is the order of differentiation. Both 'x' and 'dOrder' are dictionaries.
 
-### Function description: (supported operations '+', '-', '\*', '/', '\*\*',
+### Function description: (supported operations '+', '-', '\*', '/', '\*\*')
 ##### Addition(funcList): objects in list can be non autoD objects
 input list of objects you want to add. funcList=[func1,func2,func3,...]
 
