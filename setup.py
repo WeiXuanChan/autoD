@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 setup(
   name = 'autoD',         # How you named your package folder (MyLib)
   packages = ['autoD'],   # Chose the same as "name"
