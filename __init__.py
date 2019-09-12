@@ -57,9 +57,10 @@ Flexible functions accepts user-defined function and turn them into callable obj
 
 
 '''
+_version='3.7.0'
+print('autoD version',_version)
 
 import numpy as np
-print('autoD version 3.7.0')
 '''
 --------------------Main Class-----------------
 '''
