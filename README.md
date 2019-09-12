@@ -82,3 +82,9 @@ This code is easy to edit and depends on only Numpy. If you need more functional
 If you have extra RAM to spare and using a smaller number of nodes, you can try out Theano (http://deeplearning.net/software/theano/). 
 
 The next objective is to add backward automatic differentiation to this module and enable compatible switch between backward and forward automatic differentiation for the user to choose their own flow map.
+
+
+### Installation
+If your default python is python3:
+
+pip install motionSegmentation
