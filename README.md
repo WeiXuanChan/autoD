@@ -87,4 +87,4 @@ The next objective is to add backward automatic differentiation to this module a
 ### Installation
 If your default python is python3:
 
-pip install motionSegmentation
+pip install autoD
