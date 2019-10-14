@@ -38,6 +38,8 @@ History:
   Author: dwindz 16Jul2017           - v3.7.0
                                         -clean up __new__ for pickle
                                         -swap is instance(float,int,...) to not(isinstance(AD))
+  Author: dwindz 14Oct2017           - v3.8.0
+                                        -change dOrder to kwarg
 
 '''
 
@@ -57,7 +59,7 @@ Flexible functions accepts user-defined function and turn them into callable obj
 
 
 '''
-_version='3.7.0'
+_version='3.8.0'
 print('autoD version',_version)
 
 import numpy as np
@@ -135,7 +137,7 @@ class Differentiate(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         new_dOrder=dOrder.copy()
         for var in self.inputorder:
             if var in dOrder:
@@ -174,7 +176,7 @@ class Addition(AD):
             except AttributeError:
                 self.dependent=['ALL']
             
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -216,7 +218,7 @@ class Multiply(AD):
             except AttributeError:
                 self.dependent=['ALL']
         self.rdOL=rotatingdOrderList(len(self.funcList))
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -277,7 +279,7 @@ class Power(AD):
         else:
             self.new_exp=None
         self.rdOL=rotatingdOrderListPower()
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -347,7 +349,7 @@ class Exp(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -397,7 +399,7 @@ class Ln(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -463,7 +465,7 @@ class Log(AD):
         else:
             self.new_ln=Ln(self.func)
             self.coef=-1./np.log(self.base)
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -490,7 +492,7 @@ class Cos(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -553,7 +555,7 @@ class Cosh(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.cosh=Cos(func*1j)
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         result=self.cosh(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
@@ -574,7 +576,7 @@ class Sin(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -637,7 +639,7 @@ class Sinh(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.sinh=-1j*Sin(func*1j)
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         result=self.sinh(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
@@ -658,7 +660,7 @@ class Tan(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.tan=Sin(func)/Cos(func)
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         result=self.tan(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
@@ -680,7 +682,7 @@ class Tanh(AD):
             self.dependent=['ALL']
         self.tanh_negative=(1-Exp(-2.*func))/(1+Exp(-2.*func))
         self.tanh_positive=(Exp(2.*func)-1)/(Exp(2.*func)+1)
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         result=self.tanh_negative(x,dOrder)
         if not(float('-inf')<np.abs(result)<float('inf')):
             result=self.tanh_positive(x,dOrder)
@@ -705,7 +707,7 @@ class Conjugate(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         result=np.conjugate(self.func(x,dOrder))
         self.debugPrint(x,dOrder,result)
         return result
@@ -725,7 +727,7 @@ class Real(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         result=self.func(x,dOrder).real
         self.debugPrint(x,dOrder,result)
         return result
@@ -745,7 +747,7 @@ class Imaginary(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         result=self.func(x,dOrder).imag
         self.debugPrint(x,dOrder,result)
         return result
@@ -766,7 +768,7 @@ class Absolute(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         result=self.abs(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
@@ -778,7 +780,7 @@ class Constant(AD):
     def __init__(self,const):
         self.const=const
         self.dependent=[]
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         for var in dOrder:
             if dOrder[var]>0:
                 self.debugPrint(x,dOrder,0.)
@@ -792,7 +794,7 @@ class Scalar(AD):
     def __init__(self,name):
         self.name=name
         self.dependent=[name]
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         returnX=True
         for var in dOrder:
             if dOrder[var]>0:
@@ -819,7 +821,7 @@ class Function(AD):
         self.func=func
         self.args=args
         self.dependent=dependent
-    def __call__(self,x,dOrder):
+    def __call__(self,x,dOrder={}):
         args=self.args
         result=self.func(x,dOrder,*args)
         self.debugPrint(x,dOrder,result)
