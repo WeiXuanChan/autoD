@@ -38,7 +38,7 @@ History:
   Author: dwindz 16Jul2017           - v3.7.0
                                         -clean up __new__ for pickle
                                         -swap is instance(float,int,...) to not(isinstance(AD))
-  Author: dwindz 14Oct2017           - v3.8.0
+  Author: dwindz 14Oct2019           - v3.8.0
                                         -change dOrder to kwarg
 
 '''
