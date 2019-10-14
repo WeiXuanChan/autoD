@@ -4,41 +4,41 @@ Description: Forward automatic differentiation
 History:
     Date    Programmer SAR# - Description
     ---------- ---------- ----------------------------
-  Author: dwindz 24Feb2016           - Created
-  Author: dwindz 25Feb2016           - v2
+  Author: w.x.chan1986@gmail.com 24Feb2016           - Created
+  Author: w.x.chan1986@gmail.com 25Feb2016           - v2
                                         -include multi-variable entry
-  Author: dwindz 03May2016           - v2.1
+  Author: w.x.chan1986@gmail.com 03May2016           - v2.1
                                         -change x and dOrder inputs to type dict
                                         -corrected Multiply, Power etc. on value of new differntiation order
                                         -corrected change multiplication to numpy.dots
-  Author: dwindz 18May2016           - v3
+  Author: w.x.chan1986@gmail.com 18May2016           - v3
                                         -corrected bug in Power where power goes to -1 from 0
                                         -add dependent scalars to reduce runtime
-  Author: dwindz 19May2016           - v3.1
+  Author: w.x.chan1986@gmail.com 19May2016           - v3.1
                                         -remove class creation inside class function to reduce runtime
                                         -Multiply and Addition now accepts floats as one of the object in list
 #####################Set as Main version########################
-  Author: dwindz 03Jun2016           - v3.2
+  Author: w.x.chan1986@gmail.com 03Jun2016           - v3.2
                                         -added complex conjugate, real and imaginary
                                         -added shortcut method __add__ etc
-  Author: dwindz 13Dec2016           - v3.3
+  Author: w.x.chan1986@gmail.com 13Dec2016           - v3.3
                                         -added absolute
-  Author: dwindz 02Jan2017           - v3.4
+  Author: w.x.chan1986@gmail.com 02Jan2017           - v3.4
                                         -added hyperbolic trigo functions
-  Author: dwindz 03Jan2017           - v3.5
+  Author: w.x.chan1986@gmail.com 03Jan2017           - v3.5
                                         -added debug print out
-  Author: dwindz 04Jan2017           - v3.5.1
+  Author: w.x.chan1986@gmail.com 04Jan2017           - v3.5.1
                                         -overwrite __new__ to return number when input is not AD object
                                         -move debug control to the main module functions
-  Author: dwindz 17Jan2017           - v3.6.0
+  Author: w.x.chan1986@gmail.com 17Jan2017           - v3.6.0
                                         -change all object to callable __call__ instead of using .cal()
-  Author: dwindz 16Jul2017           - v3.6.1
+  Author: w.x.chan1986@gmail.com 16Jul2017           - v3.6.1
                                         -debug Power class with power=0 (error in differentiating x^0 wrt x)
                                         -added self print to indicate dependent variables
-  Author: dwindz 16Jul2017           - v3.7.0
+  Author: w.x.chan1986@gmail.com 16Jul2017           - v3.7.0
                                         -clean up __new__ for pickle
                                         -swap is instance(float,int,...) to not(isinstance(AD))
-  Author: dwindz 14Oct2019           - v3.8.0
+  Author: w.x.chan1986@gmail.com 14Oct2019           - v3.8.0
                                         -change dOrder to kwarg
 
 '''
