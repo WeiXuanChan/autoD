@@ -63,6 +63,8 @@ History:
                                         -swap is instance(float,int,...) to not(isinstance(AD))
   Author: w.x.chan1986@gmail.com 14Oct2019           - v3.8.0
                                         -change dOrder to kwarg
+  Author: w.x.chan1986@gmail.com 23Oct2019           - v3.9.0
+                                        -add function statistics for getting stats of calculation 
 
 '''
 
@@ -131,14 +133,36 @@ class AD:
             return 'autoD function'
         strOut=','.join(self.dependent)
         return 'autoD function('+strOut+')'
+    def statistics(self,statsDict,dOrder={}):
+        return;
     def debugPrint(self,x,dOrder,result):
         if self.debugPrintout and self.debugSwitchFunc(x,dOrder,result):
             print(self.debugName,'@',x)
             print('    differential=',dOrder)
             print('    value=',result)
         return;
-    
-        
+class Statistics:
+    def __new__(cls, *args, **kwargs):
+        return super().__new__(cls)
+    def __init__(self,func,order):
+        self.stats={}
+        self.specialkey={}
+    def __repr__(self):
+        repr(self.stats)
+    def count(self,key,countNumber,*args):
+        if key in self.specialkey:
+            self.specialkey[key](self.stats,key,countNumber,*args)
+        elif key in self.stats:
+            self.stats[key]+=countNumber
+        else:
+            self.stats[key]=countNumber
+    def uncount(self,key,countNumber,*args):
+        if key in self.specialkey:
+            self.specialkey[key](self.stats,key,-countNumber,*args)
+        elif key in self.stats:
+            self.stats[key]-=countNumber
+        else:
+            self.stats[key]=-countNumber
 '''
 #---------------Basic Functions-------------------------------#
 '''
@@ -160,6 +184,19 @@ class Differentiate(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
+    def statistics(self,statsDict,dOrder={}):
+        new_dOrder=dOrder.copy()
+        for var in self.inputorder:
+            if var in dOrder:
+                new_dOrder[var]=self.inputorder[var]+dOrder[var]
+            else:
+                new_dOrder[var]=self.inputorder[var]+0
+        if 'ALL' not in self.dependent:
+            for var in new_dOrder:
+                if new_dOrder[var]>0 and (var not in self.dependent):
+                    return;
+        self.inputFunc.statistics(statsDict,new_dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         new_dOrder=dOrder.copy()
         for var in self.inputorder:
@@ -198,7 +235,15 @@ class Addition(AD):
                         self.dependent.append(dependent)
             except AttributeError:
                 self.dependent=['ALL']
-            
+    def statistics(self,statsDict,dOrder={}):
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return;
+        statsDict.count('+',len(self.funcList))
+        for n in range(len(self.funcList)):
+            self.funcList[n].statistics(statsDict,dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
@@ -241,6 +286,34 @@ class Multiply(AD):
             except AttributeError:
                 self.dependent=['ALL']
         self.rdOL=rotatingdOrderList(len(self.funcList))
+    def statistics(self,statsDict,dOrder={}):
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return;
+        dOrderList,keyList=splitdOrder(dOrder)
+        pastCalculation={}
+        if len(dOrderList)==0:
+            statsDict.count('*',len(self.funcList))
+            for n in range(len(self.funcList)):
+                self.funcList[n].statistics(statsDict)
+            return;
+        self.rdOL.reset(dOrderList)
+        while not(self.rdOL.end):
+            temp_dOrderList=self.rdOL.get()
+            for n in range(len(self.funcList)):
+                pastCalculationKey=str(n)+' '+''.join(map(str,temp_dOrderList[n]))
+                if pastCalculationKey in pastCalculation:
+                    statsDict.count('*',1)
+                else:
+                    temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
+                    self.funcList[n].statistics(statsDict,temp_dOrder)
+                    pastCalculation[pastCalculationKey]=0
+                    statsDict.count('*',1)
+            statsDict.count('+',1)
+            self.rdOL.incr()
+        statsDict.uncount('+',1)
+        return;
     def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
@@ -302,6 +375,51 @@ class Power(AD):
         else:
             self.new_exp=None
         self.rdOL=rotatingdOrderListPower()
+    def statistics(self,statsDict,dOrder={}):
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return;
+        if self.pow==1:
+            self.func.statistics(statsDict,dOrder)
+            return;
+        elif self.pow==0:
+            Constant(1.).statistics(statsDict,dOrder)
+            return;
+        elif not(self.new_exp==None):
+            self.new_exp.statistics(statsDict,dOrder)
+            return;
+        dOrderList,keyList=splitdOrder(dOrder)
+        if len(dOrderList)==0:
+            statsDict.count('**',1,self.pow)
+            self.func.statistics(statsDict,dOrder)
+            return;
+        self.rdOL.reset(dOrderList)
+        pastCalculation={}
+        while not(self.rdOL.end):
+            temp_dOrderList=self.rdOL.get()
+            count=0
+            for n in range(len(temp_dOrderList)):
+                if len(temp_dOrderList[n])!=0:
+                    statsDict.count('*',1)
+                    count+=1
+            if (self.pow-count)!=0:
+                statsDict.count('*',1)
+                statsDict.count('**',1,self.pow-count)
+            for n in range(len(temp_dOrderList)):
+                if len(temp_dOrderList[n])!=0:
+                    pastCalculationKey=''.join(map(str, temp_dOrderList[n]))
+                    if pastCalculationKey in pastCalculation:
+                        statsDict.count('*',1)
+                    else:
+                        temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
+                        self.func.statistics(statsDict,temp_dOrder)
+                        pastCalculation[pastCalculationKey]=0
+                        statsDict.count('*',1)
+            statsDict.count('+',1)
+            self.rdOL.incr()
+        statsDict.uncount('+',1)
+        return;
     def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
@@ -372,6 +490,34 @@ class Exp(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
+    def statistics(self,statsDict,dOrder={}):
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return;
+        dOrderList,keyList=splitdOrder(dOrder)
+        statsDict.count('**',1)
+        self.func.statistics(statsDict)
+        if len(dOrderList)==0:
+            return;
+        self.rdOL.reset(dOrderList)
+        pastCalculation={}
+        while not(self.rdOL.end):
+            temp_dOrderList=self.rdOL.get()
+            for n in range(len(temp_dOrderList)):
+                if len(temp_dOrderList[n])!=0:
+                    pastCalculationKey=''.join(map(str,temp_dOrderList[n]))
+                    if pastCalculationKey in pastCalculation:
+                        statsDict.count('*',1)
+                    else:
+                        temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
+                        self.func.statistics(statsDict,temp_dOrder)
+                        pastCalculation[pastCalculationKey]=0
+                        statsDict.count('*',1)
+            statsDict.count('+',1)
+            self.rdOL.incr()
+        statsDict.uncount('+',1)
+        return;
     def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
@@ -422,6 +568,43 @@ class Ln(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
+    def statistics(self,statsDict,dOrder={}):
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return;
+        dOrderList,keyList=splitdOrder(dOrder)
+        if len(dOrderList)==0:
+            statsDict.count('log',1)
+            self.func.statistics(statsDict)
+            return;
+        self.rdOL.reset(dOrderList)
+        pastCalculation={}
+        while not(self.rdOL.end):
+            temp_dOrderList=self.rdOL.get()
+            count=0
+            for n in range(len(temp_dOrderList)):
+                if len(temp_dOrderList[n])!=0:
+                    if count!=0:
+                        statsDict.count('*',1)
+                    count-=1
+            statsDict.count('*',1)
+            statsDict.count('**',1,count)
+            self.func.statistics(statsDict)
+            for n in range(len(temp_dOrderList)):
+                if len(temp_dOrderList[n])!=0:
+                    pastCalculationKey=''.join(map(str,temp_dOrderList[n]))
+                    if pastCalculationKey in pastCalculation:
+                        statsDict.count('*',1)
+                    else:
+                        temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
+                        self.func.statistics(statsDict,temp_dOrder)
+                        pastCalculation[pastCalculationKey]=0
+                        statsDict.count('*',1)
+            statsDict.count('+',1)
+            self.rdOL.incr()
+        statsDict.uncount('+',1)
+        return;
     def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
@@ -488,6 +671,14 @@ class Log(AD):
         else:
             self.new_ln=Ln(self.func)
             self.coef=-1./np.log(self.base)
+    def statistics(self,statsDict,dOrder={}):
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return;
+        statsDict.count('*',1)
+        self.new_ln.statistics(statsDict,dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
@@ -515,6 +706,41 @@ class Cos(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
+    def statistics(self,statsDict,dOrder={}):
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return;
+        dOrderList,keyList=splitdOrder(dOrder)
+        statsDict.count('cos',1)
+        self.func.statistics(statsDict)
+        if len(dOrderList)==0:
+            return;
+        self.rdOL.reset(dOrderList)
+        pastCalculation={}
+        statsDict.count('sin',1)
+        while not(self.rdOL.end):
+            temp_dOrderList=self.rdOL.get()
+            count=0
+            for n in range(len(temp_dOrderList)):
+                if len(temp_dOrderList[n])!=0:
+                    count+=1
+            for n in range(len(temp_dOrderList)):
+                if len(temp_dOrderList[n])!=0:
+                    pastCalculationKey=''.join(map(str,temp_dOrderList[n]))
+                    if pastCalculationKey in pastCalculation:
+                        statsDict.count('*',1)
+                    else:
+                        temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
+                        self.func.statistics(statsDict,temp_dOrder)
+                        pastCalculation[pastCalculationKey]=0
+                        statsDict.count('*',1)
+            statsDict.count('*',1)
+            statsDict.count('/',1)
+            statsDict.count('+',1)
+            self.rdOL.incr()
+        statsDict.uncount('+',1)
+        return;
     def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
@@ -522,14 +748,15 @@ class Cos(AD):
                     self.debugPrint(x,dOrder,0.)
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
-        cosValue=np.cos(self.func(x,{}))
+        funcValue=self.func(x,{})
+        cosValue=np.cos(funcValue)
         if len(dOrderList)==0:
             self.debugPrint(x,dOrder,cosValue)
             return cosValue
         self.rdOL.reset(dOrderList)
         addList=[]
         pastCalculation={}
-        sinValue=np.sin(self.func(x,{}))
+        sinValue=np.sin(funcValue)
         while not(self.rdOL.end):
             mul=1.
             temp_dOrderList=self.rdOL.get()
@@ -578,6 +805,9 @@ class Cosh(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.cosh=Cos(func*1j)
+    def statistics(self,statsDict,dOrder={}):
+        self.cosh.statistics(statsDict,dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         result=self.cosh(x,dOrder)
         self.debugPrint(x,dOrder,result)
@@ -599,6 +829,41 @@ class Sin(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
+    def statistics(self,statsDict,dOrder={}):
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and (var not in self.dependent):
+                    return;
+        dOrderList,keyList=splitdOrder(dOrder)
+        statsDict.count('sin',1)
+        self.func.statistics(statsDict)
+        if len(dOrderList)==0:
+            return;
+        self.rdOL.reset(dOrderList)
+        pastCalculation={}
+        statsDict.count('cos',1)
+        while not(self.rdOL.end):
+            temp_dOrderList=self.rdOL.get()
+            count=0
+            for n in range(len(temp_dOrderList)):
+                if len(temp_dOrderList[n])!=0:
+                    count+=1
+            for n in range(len(temp_dOrderList)):
+                if len(temp_dOrderList[n])!=0:
+                    pastCalculationKey=''.join(map(str,temp_dOrderList[n]))
+                    if pastCalculationKey in pastCalculation:
+                        statsDict.count('*',1)
+                    else:
+                        temp_dOrder=mergedOrder(temp_dOrderList[n],keyList)
+                        self.func.statistics(statsDict,temp_dOrder)
+                        pastCalculation[pastCalculationKey]=temp_value
+                        statsDict.count('*',1)
+            statsDict.count('*',1)
+            statsDict.count('/',1)
+            statsDict.count('+',1)
+            self.rdOL.incr()
+        statsDict.uncount('+',1)
+        return;
     def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in dOrder:
@@ -606,14 +871,15 @@ class Sin(AD):
                     self.debugPrint(x,dOrder,0.)
                     return 0.
         dOrderList,keyList=splitdOrder(dOrder)
-        sinValue=np.sin(self.func(x,{}))
+        funcValue=self.func(x,{})
+        sinValue=np.sin(funcValue)
         if len(dOrderList)==0:
             self.debugPrint(x,dOrder,sinValue)
             return sinValue
         self.rdOL.reset(dOrderList)
         addList=[]
         pastCalculation={}
-        cosValue=np.cos(self.func(x,{}))
+        cosValue=np.cos(funcValue)
         while not(self.rdOL.end):
             mul=1.
             temp_dOrderList=self.rdOL.get()
@@ -662,6 +928,9 @@ class Sinh(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.sinh=-1j*Sin(func*1j)
+    def statistics(self,statsDict,dOrder={}):
+        self.sinh.statistics(statsDict,dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         result=self.sinh(x,dOrder)
         self.debugPrint(x,dOrder,result)
@@ -683,6 +952,9 @@ class Tan(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.tan=Sin(func)/Cos(func)
+    def statistics(self,statsDict,dOrder={}):
+        self.tan.statistics(statsDict,dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         result=self.tan(x,dOrder)
         self.debugPrint(x,dOrder,result)
@@ -705,6 +977,10 @@ class Tanh(AD):
             self.dependent=['ALL']
         self.tanh_negative=(1-Exp(-2.*func))/(1+Exp(-2.*func))
         self.tanh_positive=(Exp(2.*func)-1)/(Exp(2.*func)+1)
+    def statistics(self,statsDict,dOrder={}):
+        self.tanh_negative.statistics(statsDict,dOrder)
+        self.tanh_positive.statistics(statsDict,dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         result=self.tanh_negative(x,dOrder)
         if not(float('-inf')<np.abs(result)<float('inf')):
@@ -730,6 +1006,9 @@ class Conjugate(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
+    def statistics(self,statsDict,dOrder={}):
+        statsDict.count('+',1)
+        return;
     def __call__(self,x,dOrder={}):
         result=np.conjugate(self.func(x,dOrder))
         self.debugPrint(x,dOrder,result)
@@ -750,6 +1029,9 @@ class Real(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
+    def statistics(self,statsDict,dOrder={}):
+        self.func.statistics(statsDict,dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         result=self.func(x,dOrder).real
         self.debugPrint(x,dOrder,result)
@@ -770,6 +1052,9 @@ class Imaginary(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
+    def statistics(self,statsDict,dOrder={}):
+        self.func.statistics(statsDict,dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         result=self.func(x,dOrder).imag
         self.debugPrint(x,dOrder,result)
@@ -791,6 +1076,9 @@ class Absolute(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
+    def statistics(self,statsDict,dOrder={}):
+        statsDict.count('+',1)
+        return;
     def __call__(self,x,dOrder={}):
         result=self.abs(x,dOrder)
         self.debugPrint(x,dOrder,result)
@@ -817,6 +1105,9 @@ class Scalar(AD):
     def __init__(self,name):
         self.name=name
         self.dependent=[name]
+    def statistics(self,statsDict,dOrder={}):
+        statsDict.count(name,1,dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         returnX=True
         for var in dOrder:
@@ -844,6 +1135,9 @@ class Function(AD):
         self.func=func
         self.args=args
         self.dependent=dependent
+    def statistics(self,statsDict,dOrder={}):
+        statsDict.count(self.func,1,dOrder)
+        return;
     def __call__(self,x,dOrder={}):
         args=self.args
         result=self.func(x,dOrder,*args)
