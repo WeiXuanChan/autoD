@@ -98,7 +98,7 @@ class Statistics:
         self.stats={}
         self.specialkey={}
     def __repr__(self):
-        repr(self.stats)
+        return repr(self.stats)
     def count(self,key,countNumber,*args):
         if key in self.specialkey:
             self.specialkey[key](self.stats,key,countNumber,*args)
