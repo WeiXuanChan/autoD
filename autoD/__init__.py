@@ -84,7 +84,7 @@ Flexible functions accepts user-defined function and turn them into callable obj
 
 
 '''
-_version='3.8.0'
+_version='3.9.0'
 print('autoD version',_version)
 
 import numpy as np
@@ -97,16 +97,22 @@ class Statistics:
     def __init__(self):
         self.stats={}
         self.specialkey={}
-    def dictReport(d,addstr=''):
+    def dictReport(self,d,addstr=''):
         returnSTR=''
         for var in d:
+            if var=='dvariables' or var=='':
+                continue
             if isinstance(d[var],dict):
-                returnSTR+=dictReport(d[var],addstr=addstr+'    ')
+                returnSTR+=addstr+var+':'
+                if '' in d[var]:
+                    returnSTR+=str(d[var][''])
+                returnSTR+='\n'
+                returnSTR+=self.dictReport(d[var],addstr=addstr+'    d')
             else:
                 returnSTR+=addstr+var+':'+str(d[var])+'\n'
         return returnSTR
     def __repr__(self):
-        return dictReport(self.stats)
+        return 'STATISTICS::\n'+self.dictReport(self.stats,addstr='    ')
     def count(self,key,countNumber,*args):
         if key in self.specialkey:
             self.specialkey[key](self.stats,key,countNumber,*args)
