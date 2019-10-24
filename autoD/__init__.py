@@ -94,7 +94,7 @@ import numpy as np
 class Statistics:
     def __new__(cls, *args, **kwargs):
         return super().__new__(cls)
-    def __init__(self,func,order):
+    def __init__(self):
         self.stats={}
         self.specialkey={}
     def __repr__(self):
@@ -106,6 +106,7 @@ class Statistics:
             self.stats[key]+=countNumber
         else:
             self.stats[key]=countNumber
+        return;
     def uncount(self,key,countNumber,*args):
         if key in self.specialkey:
             self.specialkey[key](self.stats,key,-countNumber,*args)
@@ -113,6 +114,30 @@ class Statistics:
             self.stats[key]-=countNumber
         else:
             self.stats[key]=-countNumber
+        return;
+    def countVariable(self,key,countNumber,dOrder):
+        if key not in self.specialkey:
+            self.specialkey[key]=self.countVariable(key,countNumber,dOrder)
+        if key not in self.stats:
+            self.stats[key]={'dvariables':[]}
+        dvar=self.stats[key]['dvariables'].copy()
+        dvalue=list(np.zeros(len(self.stats[key]['dvariables']),dtype=int))
+        for var in dOrder:
+            if dOrder[var]>0:
+                if var in dvar:
+                    dvalue[dvar.index(var)]=dOrder[var]
+                else:
+                    dvar.append(var)
+                    dvalue.append(dOrder[var])
+        dkey=''
+        for n in range(len(dvar)):
+            if dvalue[n]>0:
+                dkey+=dvar[n]+str(dvalue[n])
+        if dkey in self.stats[key]:
+            self.stats[key][dkey]+=countNumber
+        else:
+            self.stats[key][dkey]=countNumber
+        return;
 class AD:
     def defaultDebugSwitch(self,x,dOrder,result):
         return True
@@ -1106,7 +1131,7 @@ class Scalar(AD):
         self.name=name
         self.dependent=[name]
     def statistics(self,statsDict=Statistics(),dOrder={}):
-        statsDict.count(name,1,dOrder)
+        statsDict.count(self.name,1,{})
         return;
     def __call__(self,x,dOrder={}):
         returnX=True
@@ -1136,9 +1161,18 @@ class Function(AD):
         self.args=args
         self.dependent=dependent
     def statistics(self,statsDict=Statistics(),dOrder={}):
-        statsDict.count(self.func,1,dOrder)
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and not(var in self.dependent):
+                    return;
+        statsDict.count(self.func,1,dOrder)       
         return;
     def __call__(self,x,dOrder={}):
+        if 'ALL' not in self.dependent:
+            for var in new_dOrder:
+                if new_dOrder[var]>0 and (var not in self.dependent):
+                    self.debugPrint(x,dOrder,0.)
+                    return 0.
         args=self.args
         result=self.func(x,dOrder,*args)
         self.debugPrint(x,dOrder,result)
