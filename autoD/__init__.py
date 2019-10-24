@@ -97,8 +97,16 @@ class Statistics:
     def __init__(self):
         self.stats={}
         self.specialkey={}
+    def dictReport(d,addstr=''):
+        returnSTR=''
+        for var in d:
+            if isinstance(d[var],dict):
+                returnSTR+=dictReport(d[var],addstr=addstr+'    ')
+            else:
+                returnSTR+=addstr+var+':'+str(d[var])+'\n'
+        return returnSTR
     def __repr__(self):
-        return repr(self.stats)
+        return dictReport(self.stats)
     def count(self,key,countNumber,*args):
         if key in self.specialkey:
             self.specialkey[key](self.stats,key,countNumber,*args)
@@ -117,10 +125,10 @@ class Statistics:
         return;
     def countVariable(self,key,countNumber,dOrder):
         if key not in self.specialkey:
-            self.specialkey[key]=self.countVariable(key,countNumber,dOrder)
+            self.specialkey[key]=self.countVariable
         if key not in self.stats:
             self.stats[key]={'dvariables':[]}
-        dvar=self.stats[key]['dvariables'].copy()
+        dvar=self.stats[key]['dvariables']
         dvalue=list(np.zeros(len(self.stats[key]['dvariables']),dtype=int))
         for var in dOrder:
             if dOrder[var]>0:
@@ -144,6 +152,7 @@ class AD:
     debugPrintout=False
     debugName=''
     debugSwitchFunc=defaultDebugSwitch
+    dependent=['ALL']
     def __pow__(self, val):
         return Power(self,val)
     def __rpow__(self, val):
@@ -184,14 +193,16 @@ class AD:
         try:
             autoDid=str(self.name)
         except:
-            import random
-            import string
-            self.name=''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+            self.name=repr(self)
             autoDid=str(self.name)
         return autoDid
     def statistics(self,statsDict=None,dOrder={}):
         if type(statsDict)==type(None):
             statsDict=Statistics()
+        if 'ALL' not in self.dependent:
+            for var in dOrder:
+                if dOrder[var]>0 and not(var in self.dependent):
+                    return statsDict
         statsDict.countVariable(self.setID(),1,dOrder)
         return statsDict
     def debugPrint(self,x,dOrder,result):
@@ -1212,15 +1223,6 @@ class Function(AD):
         self.func=func
         self.args=args
         self.dependent=dependent
-    def statistics(self,statsDict=None,dOrder={}):
-        if type(statsDict)==type(None):
-            statsDict=Statistics()
-        if 'ALL' not in self.dependent:
-            for var in dOrder:
-                if dOrder[var]>0 and not(var in self.dependent):
-                    return statsDict
-        statsDict.countVariable(str(self.func),1,dOrder)       
-        return statsDict
     def __call__(self,x,dOrder={}):
         if 'ALL' not in self.dependent:
             for var in new_dOrder:
