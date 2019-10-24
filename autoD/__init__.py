@@ -91,6 +91,28 @@ import numpy as np
 '''
 --------------------Main Class-----------------
 '''
+class Statistics:
+    def __new__(cls, *args, **kwargs):
+        return super().__new__(cls)
+    def __init__(self,func,order):
+        self.stats={}
+        self.specialkey={}
+    def __repr__(self):
+        repr(self.stats)
+    def count(self,key,countNumber,*args):
+        if key in self.specialkey:
+            self.specialkey[key](self.stats,key,countNumber,*args)
+        elif key in self.stats:
+            self.stats[key]+=countNumber
+        else:
+            self.stats[key]=countNumber
+    def uncount(self,key,countNumber,*args):
+        if key in self.specialkey:
+            self.specialkey[key](self.stats,key,-countNumber,*args)
+        elif key in self.stats:
+            self.stats[key]-=countNumber
+        else:
+            self.stats[key]=-countNumber
 class AD:
     def defaultDebugSwitch(self,x,dOrder,result):
         return True
@@ -141,28 +163,6 @@ class AD:
             print('    differential=',dOrder)
             print('    value=',result)
         return;
-class Statistics:
-    def __new__(cls, *args, **kwargs):
-        return super().__new__(cls)
-    def __init__(self,func,order):
-        self.stats={}
-        self.specialkey={}
-    def __repr__(self):
-        repr(self.stats)
-    def count(self,key,countNumber,*args):
-        if key in self.specialkey:
-            self.specialkey[key](self.stats,key,countNumber,*args)
-        elif key in self.stats:
-            self.stats[key]+=countNumber
-        else:
-            self.stats[key]=countNumber
-    def uncount(self,key,countNumber,*args):
-        if key in self.specialkey:
-            self.specialkey[key](self.stats,key,-countNumber,*args)
-        elif key in self.stats:
-            self.stats[key]-=countNumber
-        else:
-            self.stats[key]=-countNumber
 '''
 #---------------Basic Functions-------------------------------#
 '''
