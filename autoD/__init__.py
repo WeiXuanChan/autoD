@@ -65,7 +65,7 @@ History:
                                         -change dOrder to kwarg
   Author: w.x.chan1986@gmail.com 23Oct2019           - v3.9.0
                                         -add function statistics for getting stats of calculation 
-  Author: w.x.chan1986@gmail.com 18Nov2019           - v3.9.1
+  Author: w.x.chan1986@gmail.com 18Nov2019           - v3.9.2
                                         -changed to logging
 
 '''
@@ -86,7 +86,7 @@ Flexible functions accepts user-defined function and turn them into callable obj
 
 
 '''
-_version='3.9.1'
+_version='3.9.2'
 import logging
 logger = logging.getLogger('autoD v'+_version)
 logger.info('autoD version '+_version)
