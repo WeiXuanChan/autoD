@@ -65,6 +65,8 @@ History:
                                         -change dOrder to kwarg
   Author: w.x.chan1986@gmail.com 23Oct2019           - v3.9.0
                                         -add function statistics for getting stats of calculation 
+  Author: w.x.chan1986@gmail.com 18Nov2019           - v3.9.1
+                                        -changed to logging
 
 '''
 
@@ -84,8 +86,9 @@ Flexible functions accepts user-defined function and turn them into callable obj
 
 
 '''
-_version='3.9.0'
-print('autoD version',_version)
+_version='3.9.1'
+import logging
+logging.info('autoD version',_version)
 
 import numpy as np
 '''
@@ -213,9 +216,9 @@ class AD:
         return statsDict
     def debugPrint(self,x,dOrder,result):
         if self.debugPrintout and self.debugSwitchFunc(x,dOrder,result):
-            print(self.debugName,'@',x)
-            print('    differential=',dOrder)
-            print('    value=',result)
+            logging.debug(self.debugName,'@',x)
+            logging.debug('    differential=',dOrder)
+            logging.debug('    value=',result)
         return;
 '''
 #---------------Basic Functions-------------------------------#
