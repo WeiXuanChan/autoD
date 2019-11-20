@@ -88,7 +88,7 @@ Flexible functions accepts user-defined function and turn them into callable obj
 '''
 _version='3.9.1'
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('autoD v'+_version)
 logger.info('autoD version',_version)
 
 import numpy as np
