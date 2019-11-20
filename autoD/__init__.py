@@ -89,7 +89,7 @@ Flexible functions accepts user-defined function and turn them into callable obj
 _version='3.9.1'
 import logging
 logger = logging.getLogger('autoD v'+_version)
-logger.info('autoD version',_version)
+logger.info('autoD version '+_version)
 
 import numpy as np
 '''
@@ -217,9 +217,9 @@ class AD:
         return statsDict
     def debugPrint(self,x,dOrder,result):
         if self.debugPrintout and self.debugSwitchFunc(x,dOrder,result):
-            logger.debug(self.debugName,'@',x)
-            logger.debug('    differential=',dOrder)
-            logger.debug('    value=',result)
+            logger.debug(str(self.debugName)+' @ '+str(x))
+            logger.debug('    differential= '+str(dOrder))
+            logger.debug('    value= '+str(result))
         return;
 '''
 #---------------Basic Functions-------------------------------#
