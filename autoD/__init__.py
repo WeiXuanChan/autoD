@@ -165,6 +165,7 @@ class AD:
     debugName=''
     debugSwitchFunc=defaultDebugSwitch
     dependent=['ALL']
+    node=False
     def __pow__(self, val):
         return Power(self,val)
     def __rpow__(self, val):
@@ -225,6 +226,12 @@ class AD:
             logger.debug('    differential= '+str(dOrder))
             logger.debug('    value= '+str(result))
         return;
+    def setNode(self,name):
+        if name in self.dependent:
+            raise Exception(repr(name)+' is already defined.')
+        if self.node:
+            logger.warning('Redefining variable from '+repr(self.node)+' to '+repr(name))
+        self.node=name
 '''
 #---------------Basic Functions-------------------------------#
 '''
@@ -266,6 +273,12 @@ class Differentiate(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         new_dOrder=dOrder.copy()
         for var in self.inputorder:
             if var in dOrder:
@@ -278,6 +291,8 @@ class Differentiate(AD):
                     self.debugPrint(x,dOrder,0.)
                     return 0.
         result=self.inputFunc(x,new_dOrder)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
         
@@ -319,6 +334,12 @@ class Addition(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -328,6 +349,8 @@ class Addition(AD):
         for n in range(len(self.funcList)):
             temp.append(self.funcList[n](x,dOrder))
         result=sum(temp)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
               
@@ -395,6 +418,12 @@ class Multiply(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -425,6 +454,8 @@ class Multiply(AD):
             addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 
@@ -507,6 +538,12 @@ class Power(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -556,6 +593,8 @@ class Power(AD):
                 addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
     
@@ -611,6 +650,12 @@ class Exp(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -640,6 +685,8 @@ class Exp(AD):
             addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)*exp_value
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
         
@@ -704,6 +751,12 @@ class Ln(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -740,6 +793,8 @@ class Ln(AD):
             addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
         
@@ -784,12 +839,20 @@ class Log(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
                     self.debugPrint(x,dOrder,0.)
                     return 0.
         result=self.coef*self.new_ln(x,dOrder)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
             
@@ -852,6 +915,12 @@ class Cos(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -896,6 +965,8 @@ class Cos(AD):
             addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 class Cosh(AD):
@@ -925,7 +996,15 @@ class Cosh(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         result=self.cosh(x,dOrder)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 class Sin(AD):
@@ -987,6 +1066,12 @@ class Sin(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -1031,6 +1116,8 @@ class Sin(AD):
             addList.append(mul)
             self.rdOL.incr()
         result=sum(addList)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 class Sinh(AD):
@@ -1060,7 +1147,15 @@ class Sinh(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         result=self.sinh(x,dOrder)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 class Tan(AD):
@@ -1090,7 +1185,15 @@ class Tan(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         result=self.tan(x,dOrder)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 class Tanh(AD):
@@ -1122,9 +1225,17 @@ class Tanh(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         result=self.tanh_negative(x,dOrder)
         if not(float('-inf')<np.abs(result)<float('inf')):
             result=self.tanh_positive(x,dOrder)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 '''
@@ -1156,7 +1267,15 @@ class Conjugate(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         result=np.conjugate(self.func(x,dOrder))
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 class Real(AD):
@@ -1185,7 +1304,15 @@ class Real(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         result=self.func(x,dOrder).real
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 class Imaginary(AD):
@@ -1214,7 +1341,15 @@ class Imaginary(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         result=self.func(x,dOrder).imag
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 class Absolute(AD):
@@ -1244,7 +1379,15 @@ class Absolute(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         result=self.abs(x,dOrder)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
 '''
@@ -1316,6 +1459,12 @@ class Function(AD):
     def __call__(self,x,dOrder=None):
         if dOrder is None:
             dOrder={}
+        recordNode=False
+        if self.node and sum(dOrder.values())==0:
+            if self.node in x:
+                return x[self.node]
+            else:
+                recordNode=True
         if 'ALL' not in self.dependent:
             for var in new_dOrder:
                 if new_dOrder[var]>0 and (var not in self.dependent):
@@ -1323,6 +1472,8 @@ class Function(AD):
                     return 0.
         args=self.args
         result=self.func(x,dOrder,*args)
+        if recordNode:
+            x[self.node]=result
         self.debugPrint(x,dOrder,result)
         return result
     def changeArgs(self,*new_args):
