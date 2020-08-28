@@ -66,7 +66,9 @@ History:
   Author: w.x.chan1986@gmail.com 23Oct2019           - v3.9.0
                                         -add function statistics for getting stats of calculation 
   Author: w.x.chan1986@gmail.com 18Nov2019           - v3.9.2
-                                        -changed to logging
+                                        -changed to logging 
+  Author: w.x.chan1986@gmail.com 18Nov2019           - v3.9.3
+                                        -set call(x,xOrder=None)
 
 '''
 
@@ -86,7 +88,7 @@ Flexible functions accepts user-defined function and turn them into callable obj
 
 
 '''
-_version='3.9.2'
+_version='3.9.3'
 import logging
 logger = logging.getLogger('autoD v'+_version)
 logger.info('autoD version '+_version)
@@ -206,7 +208,9 @@ class AD:
             self.name=repr(self)
             autoDid=str(self.name)
         return autoDid
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         if 'ALL' not in self.dependent:
@@ -242,7 +246,9 @@ class Differentiate(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         new_dOrder=dOrder.copy()
@@ -257,7 +263,9 @@ class Differentiate(AD):
                     return statsDict
         self.inputFunc.statistics(statsDict,new_dOrder)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         new_dOrder=dOrder.copy()
         for var in self.inputorder:
             if var in dOrder:
@@ -295,7 +303,9 @@ class Addition(AD):
                         self.dependent.append(dependent)
             except AttributeError:
                 self.dependent=['ALL']
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         if 'ALL' not in self.dependent:
@@ -306,7 +316,9 @@ class Addition(AD):
         for n in range(len(self.funcList)):
             self.funcList[n].statistics(statsDict,dOrder)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -348,7 +360,9 @@ class Multiply(AD):
             except AttributeError:
                 self.dependent=['ALL']
         self.rdOL=rotatingdOrderList(len(self.funcList))
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         if 'ALL' not in self.dependent:
@@ -378,7 +392,9 @@ class Multiply(AD):
             self.rdOL.incr()
         statsDict.uncount('+',1)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -439,7 +455,9 @@ class Power(AD):
         else:
             self.new_exp=None
         self.rdOL=rotatingdOrderListPower()
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         if 'ALL' not in self.dependent:
@@ -486,7 +504,9 @@ class Power(AD):
             self.rdOL.incr()
         statsDict.uncount('+',1)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -556,7 +576,9 @@ class Exp(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         if 'ALL' not in self.dependent:
@@ -586,7 +608,9 @@ class Exp(AD):
             self.rdOL.incr()
         statsDict.uncount('+',1)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -636,7 +660,9 @@ class Ln(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         if 'ALL' not in self.dependent:
@@ -675,7 +701,9 @@ class Ln(AD):
             self.rdOL.incr()
         statsDict.uncount('+',1)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -741,7 +769,9 @@ class Log(AD):
         else:
             self.new_ln=Ln(self.func)
             self.coef=-1./np.log(self.base)
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         if 'ALL' not in self.dependent:
@@ -751,7 +781,9 @@ class Log(AD):
         statsDict.count('*',1)
         self.new_ln.statistics(statsDict,dOrder)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -778,7 +810,9 @@ class Cos(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         if 'ALL' not in self.dependent:
@@ -815,7 +849,9 @@ class Cos(AD):
             self.rdOL.incr()
         statsDict.uncount('+',1)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -879,12 +915,16 @@ class Cosh(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.cosh=Cos(func*1j)
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         self.cosh.statistics(statsDict,dOrder)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         result=self.cosh(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
@@ -905,7 +945,9 @@ class Sin(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.rdOL=rotatingdOrderListPower()
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         if 'ALL' not in self.dependent:
@@ -942,7 +984,9 @@ class Sin(AD):
             self.rdOL.incr()
         statsDict.uncount('+',1)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if 'ALL' not in self.dependent:
             for var in dOrder:
                 if dOrder[var]>0 and (var not in self.dependent):
@@ -1006,12 +1050,16 @@ class Sinh(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.sinh=-1j*Sin(func*1j)
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         self.sinh.statistics(statsDict,dOrder)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         result=self.sinh(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
@@ -1032,12 +1080,16 @@ class Tan(AD):
         except AttributeError:
             self.dependent=['ALL']
         self.tan=Sin(func)/Cos(func)
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         self.tan.statistics(statsDict,dOrder)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         result=self.tan(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
@@ -1059,13 +1111,17 @@ class Tanh(AD):
             self.dependent=['ALL']
         self.tanh_negative=(1-Exp(-2.*func))/(1+Exp(-2.*func))
         self.tanh_positive=(Exp(2.*func)-1)/(Exp(2.*func)+1)
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         self.tanh_negative.statistics(statsDict,dOrder)
         self.tanh_positive.statistics(statsDict,dOrder)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         result=self.tanh_negative(x,dOrder)
         if not(float('-inf')<np.abs(result)<float('inf')):
             result=self.tanh_positive(x,dOrder)
@@ -1090,12 +1146,16 @@ class Conjugate(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         statsDict.count('+',1)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         result=np.conjugate(self.func(x,dOrder))
         self.debugPrint(x,dOrder,result)
         return result
@@ -1115,12 +1175,16 @@ class Real(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         self.func.statistics(statsDict,dOrder)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         result=self.func(x,dOrder).real
         self.debugPrint(x,dOrder,result)
         return result
@@ -1140,12 +1204,16 @@ class Imaginary(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         self.func.statistics(statsDict,dOrder)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         result=self.func(x,dOrder).imag
         self.debugPrint(x,dOrder,result)
         return result
@@ -1166,12 +1234,16 @@ class Absolute(AD):
             self.dependent=func.dependent[:]
         except AttributeError:
             self.dependent=['ALL']
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         statsDict.count('+',1)
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         result=self.abs(x,dOrder)
         self.debugPrint(x,dOrder,result)
         return result
@@ -1183,11 +1255,15 @@ class Constant(AD):
     def __init__(self,const):
         self.const=const
         self.dependent=[]
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         for var in dOrder:
             if dOrder[var]>0:
                 self.debugPrint(x,dOrder,0.)
@@ -1201,12 +1277,16 @@ class Scalar(AD):
     def __init__(self,name):
         self.name=name
         self.dependent=[name]
-    def statistics(self,statsDict=None,dOrder={}):
+    def statistics(self,statsDict=None,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if type(statsDict)==type(None):
             statsDict=Statistics()
         statsDict.count(self.name,1,{})
         return statsDict
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         returnX=True
         for var in dOrder:
             if dOrder[var]>0:
@@ -1233,7 +1313,9 @@ class Function(AD):
         self.func=func
         self.args=args
         self.dependent=dependent
-    def __call__(self,x,dOrder={}):
+    def __call__(self,x,dOrder=None):
+        if dOrder is None:
+            dOrder={}
         if 'ALL' not in self.dependent:
             for var in new_dOrder:
                 if new_dOrder[var]>0 and (var not in self.dependent):
