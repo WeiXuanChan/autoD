@@ -69,6 +69,8 @@ History:
                                         -changed to logging 
   Author: w.x.chan1986@gmail.com 18Nov2019           - v3.9.3
                                         -set call(x,xOrder=None)
+                                        -added function setNode(self,name), and recordNonde into x
+
 
 '''
 
